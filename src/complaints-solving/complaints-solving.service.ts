@@ -25,8 +25,7 @@ export class ComplaintsSolvingService {
     private readonly userDBService: UsersDBService,
   ) {}
   async takeComplaint(
-    { tenant_id, lang }: UserTokenInterface,
-    manager_id: string,
+    { tenant_id, lang, id }: UserTokenInterface,
     complaint_id: string,
   ) {
     const complaint = await this.complaintDBService.findOneComplaint({
@@ -41,7 +40,7 @@ export class ComplaintsSolvingService {
       throw new BadRequestException();
     const manager = await this.userDBService.findOneUser({
       where: {
-        id: manager_id,
+        id,
         tenant_id,
       },
     });

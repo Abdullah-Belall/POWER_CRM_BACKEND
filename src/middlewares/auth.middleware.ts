@@ -7,6 +7,7 @@ import { CustomRequest } from 'src/utils/types/interfaces/custom-req.interface';
 export class AuthMiddleware implements NestMiddleware {
   use(req: CustomRequest, _: Response, next: () => void) {
     const accessToken = req.headers.authorization?.split(' ')[1];
+    console.log('accessToken => ', accessToken);
     if (!accessToken) {
       req.user = null;
       next();

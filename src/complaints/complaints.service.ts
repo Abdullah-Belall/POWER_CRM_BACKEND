@@ -50,17 +50,26 @@ export class ComplaintsService {
   async findComplaints(
     tenant_id: string,
     {
+      client_id,
       have_max_time_to_solve,
       status,
       accept_excuse,
       created_from,
       created_to,
     }: ComplaintsFilterInterface,
+    managers: boolean = false,
   ) {
     const qb = this.complaintDBService
       .getComplaintRepo()
       ?.createQueryBuilder('complaint')
+      .leftJoin('complaint.user', 'user')
       .where('complaint.tenant_id = :tenant_id', { tenant_id });
+    if (client_id) {
+      qb.andWhere('user.id = :client_id', { client_id });
+    }
+    if (managers) {
+      qb.addSelect(['user.id', 'user.user_name']);
+    }
     const have_max_time_to_solve_fixed =
       typeof have_max_time_to_solve === 'boolean'
         ? have_max_time_to_solve
@@ -120,6 +129,40 @@ export class ComplaintsService {
       total,
     };
   }
+
+  async findSupporterComplaints(tenant_id: string, id: string) {
+    const [complaints, total] = await this.complaintDBService
+      .getComplaintRepo()
+      ?.createQueryBuilder('complaint')
+      .leftJoinAndSelect('complaint.user', 'client')
+      .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoin('solving.user', 'supporters')
+      .where('supporters.id = :id', { id })
+      .andWhere('supporters.tenant_id = :tenant_id', { tenant_id })
+      .andWhere('complaint.status = :status', {
+        status: ComplaintStatusEnum.IN_PROGRESS,
+      })
+      .orderBy('complaint.created_at', 'DESC')
+      .getManyAndCount();
+    return {
+      complaints,
+      total,
+    };
+  }
+  async findOneComplaint(tenant_id: string, complaint_id: string) {
+    const complaint = this.complaintDBService
+      .ComplaintQB('complaint')
+      .where('complaint.id = :complaint_id', { complaint_id })
+      .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
+      .leftJoinAndSelect('complaint.user', 'user')
+      .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoinAndSelect('complaint.assignations', 'assignations')
+      .leftJoinAndSelect('solving.user', 'supporter')
+      .orderBy('solving.index', 'DESC')
+      .getOne();
+    if (!complaint) throw new NotFoundException();
+    return complaint;
+  }
   // async setMaxTimeForComplaint(
   //   tenant_id: string,
   //   lang: LangsEnum,
@@ -170,18 +213,20 @@ export class ComplaintsService {
     const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
       .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoinAndSelect('solving.user', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
       .orderBy('solving.index', 'DESC')
       .getOne();
     this.notFound(complaint, Translations.complaints.notFound[lang]);
-    if (complaint?.solving[0]?.user?.id !== id) throw new BadRequestException();
+    if (complaint?.solving[0]?.user?.id !== id)
+      throw new BadRequestException('fixid 3dn');
     if (
       complaint?.solving[0].accept_status !== SupporterReferAcceptEnum.ACCEPTED
     )
-      throw new BadRequestException();
+      throw new BadRequestException('2');
     if (complaint?.status !== ComplaintStatusEnum.IN_PROGRESS)
-      throw new BadRequestException();
+      throw new BadRequestException('3');
     complaint.end_solve_at = new Date();
     complaint.status = status;
     await this.complaintDBService.saveComplaint(lang, complaint);

@@ -48,4 +48,20 @@ export class UsersDBService {
     });
     return user;
   }
+  async findUsers({
+    where,
+    select,
+    relations,
+  }: {
+    where: FindOptionsWhere<UserEntity>;
+    select?: FindOptionsSelect<UserEntity>;
+    relations?: string[];
+  }) {
+    const [users, total] = await this.usersRepo.findAndCount({
+      where,
+      select,
+      relations,
+    });
+    return [users, total];
+  }
 }

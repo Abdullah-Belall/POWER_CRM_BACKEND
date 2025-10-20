@@ -1,26 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersDBService } from './DB_Service/users_db.service';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly usersDBService: UsersDBService) {}
+  async profile(id: string, tenant_id: string) {
+    const user = await this.usersDBService.findOneUser({
+      where: {
+        id,
+        tenant_id,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
-
-  findAll() {
-    return `This action returns all users`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async findSupporter(tenant_id: string) {
+    const [supporters, total] = await this.usersDBService.findUsers({
+      where: { tenant_id },
+    });
+    return {
+      supporters,
+      total,
+    };
   }
 }

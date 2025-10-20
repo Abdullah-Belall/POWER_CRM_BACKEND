@@ -49,10 +49,10 @@ export class ComplaintEntity {
   screen_viewer: ScreenViewerEnum;
   @Column()
   screen_viewer_id: string;
-  @Column()
+  @Column({ nullable: true })
   screen_viewer_password: string;
-  @Column({ type: 'int' })
-  max_time_to_solve: number;
+  @Column({ type: 'int', nullable: true })
+  max_time_to_solve: number | null;
   @Column({ type: 'timestamptz', nullable: true })
   start_solve_at: Date | null;
   @Column({ type: 'timestamptz', nullable: true })

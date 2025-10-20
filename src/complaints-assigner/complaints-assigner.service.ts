@@ -14,6 +14,7 @@ import { ComplaintStatusEnum } from 'src/utils/types/enums/complaint-status.enum
 import { UserEntity } from 'src/users/entities/user.entity';
 import { ComplaintSolvingDBService } from 'src/complaints-solving/DB_Service/complaints-solving_db.service';
 import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-accept.enum';
+import { AssignSupporterDto } from './dto/assign-supporter.dto';
 
 @Injectable()
 export class ComplaintsAssignerService {
@@ -26,15 +27,20 @@ export class ComplaintsAssignerService {
   async assignSupporter(
     tenant_id: string,
     lang: LangsEnum,
-    { manager_id, supporter_id, complaint_id, note, max_time_to_solve }: any,
+    manager_id: string,
+    { supporter_id, complaint_id, note, max_time_to_solve }: AssignSupporterDto,
   ) {
     const complaint = await this.complaintDBService.findOneComplaint({
       where: { id: complaint_id, tenant_id },
+      relations: ['solving', 'solving.user'],
     });
-    this.notFound(complaint, Translations.complaints.notFound[lang]);
+    if (!complaint)
+      throw new NotFoundException(Translations.complaints.notFound[lang]);
     if (
       complaint?.status !== ComplaintStatusEnum.PENDING &&
-      complaint?.status !== ComplaintStatusEnum.SUSPENDED
+      complaint?.status !== ComplaintStatusEnum.SUSPENDED &&
+      complaint?.status === ComplaintStatusEnum.IN_PROGRESS &&
+      !complaint.solving.find((e) => e.user.id === manager_id)
     ) {
       throw new BadRequestException();
     }
@@ -82,9 +88,11 @@ export class ComplaintsAssignerService {
     );
     await this.complaintDBService.saveComplaint(lang, {
       ...complaint,
+      id: complaint.id as string,
+      tenant_id: complaint.tenant_id as string,
       status: ComplaintStatusEnum.IN_PROGRESS,
       start_solve_at: complaint.start_solve_at ?? new Date(),
-      max_time_to_solve: Number(max_time_to_solve),
+      max_time_to_solve: max_time_to_solve ? Number(max_time_to_solve) : null,
     });
     return {
       done: true,
