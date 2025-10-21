@@ -27,7 +27,10 @@ export class TenantsService {
         updated_at: false,
       },
     });
-    return origins.map((e) => e.domain);
+    return origins.map(
+      (e) =>
+        `http${process.env.NODE_ENV === 'production' ? 's' : ''}://${e.domain}`,
+    );
   }
   async createTenant(lang: LangsEnum, createTenantDto: CreateTenantDto) {
     const tenant = await this.tenantsDBService.saveTenant(
