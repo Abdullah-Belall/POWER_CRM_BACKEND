@@ -49,8 +49,18 @@ export class ComplaintsAssignerService {
         id: supporter_id,
         tenant_id,
       },
+      relations: ['role'],
+      select: {
+        role: {
+          id: true,
+          roles: true,
+        },
+      },
     });
     this.notFound(supporter, Translations.user.notFound[lang]);
+    if (!JSON.parse(supporter?.role?.roles as string)?.includes('assignable')) {
+      throw new BadRequestException();
+    }
     const manager = await this.usersDBService.findOneUser({
       where: {
         id: manager_id,

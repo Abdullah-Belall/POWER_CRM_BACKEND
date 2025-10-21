@@ -44,7 +44,8 @@ export class TenantsService {
         password: await hash(createTenantDto.password, 12),
         index: 1,
         tenant_id: tenant.tenant_id,
-        roles: createTenantDto.roles,
+        // ! really impo
+        // role: createTenantDto.roles,
       }),
     );
     return {

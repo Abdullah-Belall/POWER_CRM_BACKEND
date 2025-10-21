@@ -2,6 +2,7 @@ import { ComplaintsAssignerEntity } from 'src/complaints-assigner/entities/compl
 import { ComplaintsSolvingEntity } from 'src/complaints-solving/entities/complaints-solving.entity';
 import { ComplaintEntity } from 'src/complaints/entities/complaint.entity';
 import { DelayExcusesEntity } from 'src/delay-excuse/entities/delay-excuse.entity';
+import { RoleEntity } from 'src/roles/entities/role.entity';
 import { TelegramEntity } from 'src/telegram/entities/telegram.entity';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import {
@@ -9,6 +10,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -22,6 +24,8 @@ export class UserEntity {
   tenant_id: string;
   @Column({ type: 'int' })
   index: number;
+  @ManyToOne(() => RoleEntity, (role) => role.users)
+  role: RoleEntity;
   //* FOR CLIENTS ONLY
   @OneToMany(() => ComplaintEntity, (comp) => comp.user, { cascade: true })
   complaints: ComplaintEntity[];
@@ -51,8 +55,7 @@ export class UserEntity {
   chat_id: TelegramEntity;
   @Column()
   password: string;
-  @Column()
-  roles: string;
+
   @Column({ type: 'enum', enum: LangsEnum, default: LangsEnum.AR })
   lang: LangsEnum;
   @CreateDateColumn({ type: 'timestamptz' })

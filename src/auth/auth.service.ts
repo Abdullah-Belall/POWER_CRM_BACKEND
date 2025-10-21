@@ -13,13 +13,70 @@ import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { TenantDBService } from 'src/tenants/DB_Services/tenant_db.service';
 import { Translations } from 'src/utils/base';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
+import { RolesDBService } from 'src/roles/DB_Service/roles_db.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersDBService: UsersDBService,
     private readonly tenantDBService: TenantDBService,
+    private readonly rolesDBService: RolesDBService,
   ) {}
+
+  async signFirstUser() {
+    const roles = [
+      'create-tenant',
+      'read-tenant',
+      'update-tenant',
+
+      'create-user',
+      'read-user',
+      'update-user',
+
+      'create-role',
+      'read-role',
+      'update-role',
+
+      'create-complaint',
+      'read-complaint',
+      'assign-complaint',
+      'assignable',
+      'update-complaint',
+    ];
+    const tenant = await this.tenantDBService.saveTenant(
+      LangsEnum.EN,
+      this.tenantDBService.createTenantInstance({
+        index: 1,
+        domain: 'power-soft-crm.vercel.app',
+        company_title: 'POWER SOFT',
+        company_logo: 'no-logo',
+        phone: '+201009517926',
+        is_active: true,
+      }),
+    );
+    const role = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Big_Boss',
+        code: 1,
+        roles: JSON.stringify(roles),
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1,
+        user_name: 'boss',
+        role,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    return { done: true };
+  }
+
   async SignIn(
     { user_name, password, tenant_domain, lang }: SignInDto,
     response: Response,
@@ -36,6 +93,14 @@ export class AuthService {
         user_name,
         tenant_id,
       },
+      relations: ['role'],
+      select: {
+        role: {
+          id: true,
+          name: true,
+          roles: true,
+        },
+      },
     });
     if (!user) {
       throw new NotFoundException(Translations.user.notFound[lang]);
@@ -48,7 +113,7 @@ export class AuthService {
       id: user.id,
       index: user.index,
       user_name: user.user_name,
-      roles: user.roles,
+      role: user.role,
       lang: user.lang,
       tenant_id: user.tenant_id,
     };
@@ -73,6 +138,14 @@ export class AuthService {
         id,
         tenant_id,
       },
+      relations: ['role'],
+      select: {
+        role: {
+          id: true,
+          name: true,
+          roles: true,
+        },
+      },
     });
     if (!user) {
       throw new ForbiddenException(Translations.user.notFound[lang]);
@@ -81,7 +154,7 @@ export class AuthService {
       id: user.id,
       index: user.index,
       user_name: user.user_name,
-      roles: user.roles,
+      role: user.role,
       lang: user.lang,
       tenant_id: user.tenant_id,
     };

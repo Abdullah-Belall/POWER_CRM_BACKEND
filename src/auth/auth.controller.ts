@@ -20,6 +20,11 @@ import { RefreshGuard } from './guards/refresh-token.guard';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Get('sign-fuser')
+  async signFirstUser() {
+    return await this.authService.signFirstUser();
+  }
+
   @Post('sign-in')
   async SignIn(
     @Body() signInDto: SignInDto,

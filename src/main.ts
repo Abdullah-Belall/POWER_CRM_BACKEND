@@ -23,6 +23,7 @@ async function bootstrap() {
           ) {
             const tenantsService = app.get(TenantsService);
             cachedOrigins = await tenantsService.getAllowedOrigins();
+            console.log(cachedOrigins);
             lastFetched = now;
           }
           if (!origin || process.env.NODE_ENV === 'development')

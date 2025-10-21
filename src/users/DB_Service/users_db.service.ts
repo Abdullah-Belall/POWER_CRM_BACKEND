@@ -19,6 +19,9 @@ export class UsersDBService {
   getUsersRepo() {
     return this.usersRepo;
   }
+  usersQB(alias: string) {
+    return this.usersRepo.createQueryBuilder(alias);
+  }
   createUserInstance(obj: object) {
     return this.usersRepo.create(obj);
   }
@@ -39,7 +42,7 @@ export class UsersDBService {
   }: {
     where: FindOptionsWhere<UserEntity>;
     select?: FindOptionsSelect<UserEntity>;
-    relations?: FindOptionsRelations<UserEntity>;
+    relations?: string[];
   }) {
     const user = await this.usersRepo.findOne({
       where,

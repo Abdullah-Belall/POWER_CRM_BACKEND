@@ -6,24 +6,42 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './decorators/user.decorator';
 import type { UserTokenInterface } from './types/interfaces/user-token.interface';
+import { AuthGuard } from 'src/guards/auth.guard';
+import { ReadUserGuard } from './guards/read.guard';
+import { CreateUserGuard } from './guards/create.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('profile')
+  @UseGuards(AuthGuard)
   async profile(@User() { id, tenant_id }: UserTokenInterface) {
     return await this.usersService.profile(id, tenant_id);
   }
 
-  @Get('supporters')
-  async findSupporter(@User() { tenant_id }: UserTokenInterface) {
-    return await this.usersService.findSupporter(tenant_id);
+  @Get()
+  @UseGuards(ReadUserGuard)
+  async findUsers(
+    @User() { tenant_id }: UserTokenInterface,
+    @Query('role') role: string,
+  ) {
+    return await this.usersService.findAllUsers(tenant_id, role);
+  }
+  @Post('create')
+  @UseGuards(CreateUserGuard)
+  async createUser(
+    @User() user: UserTokenInterface,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    return await this.usersService.createUser(user, createUserDto);
   }
 }

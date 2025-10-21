@@ -10,6 +10,7 @@ import { ComplaintsModule } from './complaints/complaints.module';
 import { ComplaintsSolvingModule } from './complaints-solving/complaints-solving.module';
 import { ComplaintsAssignerModule } from './complaints-assigner/complaints-assigner.module';
 import { DelayExcuseModule } from './delay-excuse/delay-excuse.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { DelayExcuseModule } from './delay-excuse/delay-excuse.module';
     ComplaintsSolvingModule,
     ComplaintsAssignerModule,
     DelayExcuseModule,
+    RolesModule,
   ],
 })
 export class AppModule implements NestModule {

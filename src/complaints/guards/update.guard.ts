@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { CustomRequest } from 'src/utils/types/interfaces/custom-req.interface';
 
 @Injectable()
-export class CreateComplaintGuard implements CanActivate {
+export class UpdateComplaintGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -17,7 +17,7 @@ export class CreateComplaintGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     const roles: string[] = JSON.parse(request.user?.role?.roles);
-    if (roles.includes('create-complaint')) return true;
+    if (roles.includes('update-complaint')) return true;
     return false;
   }
 }

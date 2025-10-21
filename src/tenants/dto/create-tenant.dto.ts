@@ -7,7 +7,6 @@ import {
   MinLength,
   Validate,
 } from 'class-validator';
-import { IsRolesArray } from 'src/users/validators/is-roles-array.validator';
 
 export class CreateTenantDto {
   @IsString()
@@ -29,6 +28,4 @@ export class CreateTenantDto {
   @MinLength(9, { message: 'Invalid password.' })
   @MaxLength(24, { message: 'Invalid password.' })
   password: string;
-  @Validate(IsRolesArray)
-  roles: string;
 }
