@@ -29,12 +29,12 @@ export class UsersController {
   }
 
   @Get()
-  @UseGuards(ReadUserGuard)
+  @UseGuards(AuthGuard)
   async findUsers(
     @User() { tenant_id }: UserTokenInterface,
-    @Query('role') role: string,
+    @Query('role') role_id: string,
   ) {
-    return await this.usersService.findAllUsers(tenant_id, role);
+    return await this.usersService.findAllUsers(tenant_id, role_id);
   }
   @Post('create')
   @UseGuards(CreateUserGuard)

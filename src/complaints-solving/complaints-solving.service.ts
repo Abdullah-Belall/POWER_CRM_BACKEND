@@ -78,12 +78,13 @@ export class ComplaintsSolvingService {
   }
   async referToAnotherSupporter(
     { tenant_id, id, lang }: UserTokenInterface,
-    { refer_to_id, complaint_id }: any,
+    refer_to_id: string,
+    complaint_id: string,
   ) {
     const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
-      .leftJoin('complaint.solving', 'solving')
-      .addSelect(['solving.id', 'solving.index'])
+      .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoinAndSelect('solving.user', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
       .orderBy('solving.created_at', 'DESC')
@@ -91,7 +92,7 @@ export class ComplaintsSolvingService {
     this.notFound(complaint, Translations.complaints.notFound[lang]);
     if (complaint?.status !== ComplaintStatusEnum.IN_PROGRESS)
       throw new BadRequestException();
-    if (complaint?.solving[0].user.id !== id) throw new BadRequestException();
+    if (complaint?.solving[0]?.user?.id !== id) throw new BadRequestException();
     if (
       complaint?.solving[0].accept_status !== SupporterReferAcceptEnum.ACCEPTED
     )
@@ -137,6 +138,7 @@ export class ComplaintsSolvingService {
       throw new BadRequestException();
     solving!.accept_status = accept_status;
     solving!.choice_taked_at = new Date();
+    await this.solvingDBService.saveComplaintsSolving(lang, solving);
     if (accept_status === SupporterReferAcceptEnum.DECLINED) {
       await this.complaintDBService.saveComplaint(lang, {
         ...solving?.complaint,

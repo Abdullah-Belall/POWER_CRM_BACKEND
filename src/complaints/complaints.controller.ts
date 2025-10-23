@@ -54,6 +54,16 @@ export class ComplaintsController {
   async findSupporterComplaints(@User() { tenant_id, id }: UserTokenInterface) {
     return await this.complaintsService.findSupporterComplaints(tenant_id, id);
   }
+  @Get('supporter-notifi')
+  @UseGuards(AuthGuard)
+  async findSupporterComplaintsRefrence(
+    @User() { tenant_id, id }: UserTokenInterface,
+  ) {
+    return await this.complaintsService.findSupporterComplaintsRefrence(
+      tenant_id,
+      id,
+    );
+  }
 
   @Post(':id/finish')
   @UseGuards(UpdateComplaintGuard)
@@ -63,6 +73,11 @@ export class ComplaintsController {
     @Body() { status }: FisishComplaintDto,
   ) {
     return await this.complaintsService.finishComplaint(user, id, status);
+  }
+
+  @Get('test')
+  async test() {
+    return await this.complaintsService.test();
   }
   @Get(':id')
   @UseGuards(ReadComplaintGuard)

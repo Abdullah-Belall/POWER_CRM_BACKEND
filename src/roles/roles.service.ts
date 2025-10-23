@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { RolesDBService } from './DB_Service/roles_db.service';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
@@ -40,6 +44,24 @@ export class RolesService {
     return {
       done: true,
       id: role.id,
+    };
+  }
+  async changeRoleArributes(
+    { tenant_id, lang }: UserTokenInterface,
+    role_id: string,
+    roles: string,
+  ) {
+    const role = await this.roleDBService.findOneRole({
+      where: {
+        id: role_id,
+        tenant_id,
+      },
+    });
+    if (!role) throw new BadRequestException();
+    role.roles = roles;
+    await this.roleDBService.saveRoles(lang, role);
+    return {
+      done: true,
     };
   }
   async findAllRoles(tenant_id: string) {

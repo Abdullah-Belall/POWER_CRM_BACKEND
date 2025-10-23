@@ -65,7 +65,8 @@ export class UsersService {
       .loadRelationCountAndMap('user.complaints_count', 'user.complaints')
       .loadRelationCountAndMap('user.solving_count', 'user.complaints_solving');
     if (role) {
-      qb.andWhere('role.name = :name', { role });
+      // qb.andWhere('role.id = :role_id', { role_id });
+      qb.andWhere('role.name = :role', { role });
     }
     const [users, total] = await qb
       .orderBy('user.created_at', 'DESC')
@@ -80,6 +81,14 @@ export class UsersService {
       where: {
         id,
         tenant_id,
+      },
+      relations: ['role'],
+      select: {
+        role: {
+          id: true,
+          name: true,
+          roles: true,
+        },
       },
     });
     if (!user) {

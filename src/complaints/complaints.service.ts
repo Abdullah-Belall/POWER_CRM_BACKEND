@@ -129,28 +129,73 @@ export class ComplaintsService {
       total,
     };
   }
-
-  async findSupporterComplaints(tenant_id: string, id: string) {
-    const [complaints, total] = await this.complaintDBService
+  async findSupporterComplaints(tenant_id: string, supporterId: string) {
+    const qb = this.complaintDBService
       .getComplaintRepo()
-      ?.createQueryBuilder('complaint')
+      .createQueryBuilder('complaint')
       .leftJoinAndSelect('complaint.user', 'client')
       .leftJoinAndSelect('complaint.solving', 'solving')
-      .leftJoin('solving.user', 'supporters')
-      .where('supporters.id = :id', { id })
-      .andWhere('supporters.tenant_id = :tenant_id', { tenant_id })
+      .leftJoinAndSelect('solving.user', 'supporter')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
       .andWhere('complaint.status = :status', {
         status: ComplaintStatusEnum.IN_PROGRESS,
       })
-      .orderBy('complaint.created_at', 'DESC')
-      .getManyAndCount();
-    return {
-      complaints,
-      total,
-    };
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('MAX(s2.index)')
+          .from('complaint_solving', 's2')
+          .where('s2.complaintId = complaint.id')
+          .getQuery();
+        return `
+          solving.index = ${subQuery}
+          AND supporter.id = :supporterId
+          AND solving.accept_status = :accepted
+        `;
+      })
+      .setParameter('supporterId', supporterId)
+      .setParameter('accepted', SupporterReferAcceptEnum.ACCEPTED)
+      .orderBy('complaint.created_at', 'DESC');
+
+    const [complaints, total] = await qb.getManyAndCount();
+    return { complaints, total };
+  }
+  async findSupporterComplaintsRefrence(
+    tenant_id: string,
+    supporterId: string,
+  ) {
+    const qb = this.complaintDBService
+      .getComplaintRepo()
+      .createQueryBuilder('complaint')
+      .leftJoinAndSelect('complaint.user', 'client')
+      .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoinAndSelect('solving.user', 'supporter')
+      .where('supporter.id = :supporterId', { supporterId })
+      .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
+      .andWhere('complaint.status = :status', {
+        status: ComplaintStatusEnum.IN_PROGRESS,
+      })
+      .andWhere('solving.accept_status = :accept_status', {
+        accept_status: SupporterReferAcceptEnum.PENDING,
+      })
+      .orderBy('complaint.created_at', 'DESC');
+
+    const [complaints, total] = await qb.getManyAndCount();
+
+    complaints.forEach((complaint) => {
+      if (complaint.solving && complaint.solving.length > 0) {
+        complaint.solving.sort((a, b) => b.index - a.index);
+      }
+    });
+
+    const filteredComplaints = complaints.filter(
+      (complaint) => complaint.solving[0]?.user?.id === supporterId,
+    );
+
+    return { complaints: filteredComplaints, total };
   }
   async findOneComplaint(tenant_id: string, complaint_id: string) {
-    const complaint = this.complaintDBService
+    const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
       .where('complaint.id = :complaint_id', { complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
@@ -158,9 +203,15 @@ export class ComplaintsService {
       .leftJoinAndSelect('complaint.solving', 'solving')
       .leftJoinAndSelect('complaint.assignations', 'assignations')
       .leftJoinAndSelect('solving.user', 'supporter')
-      .orderBy('solving.index', 'DESC')
       .getOne();
+
     if (!complaint) throw new NotFoundException();
+
+    // ترتيب solving records حسب index
+    if (complaint.solving && complaint.solving.length > 0) {
+      complaint.solving.sort((a, b) => b.index - a.index);
+    }
+
     return complaint;
   }
   // async setMaxTimeForComplaint(
@@ -216,9 +267,15 @@ export class ComplaintsService {
       .leftJoinAndSelect('solving.user', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
-      .orderBy('solving.index', 'DESC')
       .getOne();
+
     this.notFound(complaint, Translations.complaints.notFound[lang]);
+
+    // ترتيب solving records حسب index
+    if (complaint && complaint.solving && complaint.solving.length > 0) {
+      complaint.solving.sort((a, b) => b.index - a.index);
+    }
+
     if (complaint?.solving[0]?.user?.id !== id)
       throw new BadRequestException('fixid 3dn');
     if (
@@ -256,5 +313,18 @@ export class ComplaintsService {
   }
   private notFound(thing: any, message?: string) {
     if (!thing) throw new NotFoundException(message);
+  }
+
+  async test() {
+    return await this.complaintDBService
+      .ComplaintQB('complaint')
+      .leftJoinAndSelect('complaint.delay_excuses', 'delay_excuses')
+      .leftJoinAndSelect('complaint.user', 'user')
+      .leftJoinAndSelect('complaint.solving', 'solving')
+      .leftJoinAndSelect('solving.user', 'solving_user')
+      .leftJoinAndSelect('complaint.assignations', 'assignations')
+      .leftJoinAndSelect('assignations.supporter', 'supporter')
+      .leftJoinAndSelect('assignations.manager', 'manager')
+      .getMany();
   }
 }

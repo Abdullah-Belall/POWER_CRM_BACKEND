@@ -28,7 +28,7 @@ export class ComplaintsSolvingEntity {
     default: SupporterReferAcceptEnum.PENDING,
   })
   accept_status: SupporterReferAcceptEnum;
-  @Column({ type: 'timestamptz' })
+  @Column({ type: 'timestamptz', nullable: true })
   choice_taked_at: Date;
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;

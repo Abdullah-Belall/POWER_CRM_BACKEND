@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { CustomRequest } from 'src/utils/types/interfaces/custom-req.interface';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class CreateRoleAttributesGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -16,6 +16,8 @@ export class AuthGuard implements CanActivate {
     if (!request.user) {
       throw new UnauthorizedException();
     }
-    return true;
+    const roles: string[] = JSON.parse(request.user?.role?.roles);
+    if (roles.includes('change-role-attributes')) return true;
+    return false;
   }
 }

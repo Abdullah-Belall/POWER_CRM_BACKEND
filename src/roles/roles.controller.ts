@@ -1,10 +1,20 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Patch,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { User } from 'src/users/decorators/user.decorator';
 import { CreateRoleGuard } from './guards/create.guard';
 import { ReadRoleGuard } from './guards/read.guard';
+import { ChangeRoleAttribute } from './dto/change-role-attributes.dto';
 
 @Controller('roles')
 export class RolesController {
@@ -16,6 +26,15 @@ export class RolesController {
     @Body() createRoleDto: CreateRoleDto,
   ) {
     return await this.rolesService.createRole(user, createRoleDto);
+  }
+  @Patch(':id')
+  @UseGuards(CreateRoleGuard)
+  async changeRoleAttributes(
+    @User() user: UserTokenInterface,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() { roles }: ChangeRoleAttribute,
+  ) {
+    return await this.rolesService.changeRoleArributes(user, id, roles);
   }
   @Get()
   @UseGuards(ReadRoleGuard)

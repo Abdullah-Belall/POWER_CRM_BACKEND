@@ -47,7 +47,10 @@ export class AuthService {
       LangsEnum.EN,
       this.tenantDBService.createTenantInstance({
         index: 1,
-        domain: 'power-soft-crm.vercel.app',
+        domain:
+          process.env.NODE_ENV === 'production'
+            ? 'power-soft-crm.vercel.app'
+            : 'localhost.com',
         company_title: 'POWER SOFT',
         company_logo: 'no-logo',
         phone: '+201009517926',

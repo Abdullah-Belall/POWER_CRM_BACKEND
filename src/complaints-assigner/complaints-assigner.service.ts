@@ -68,6 +68,14 @@ export class ComplaintsAssignerService {
       },
     });
     this.notFound(manager, Translations.user.notFound[lang]);
+    await this.complaintDBService.saveComplaint(lang, {
+      ...complaint,
+      id: complaint.id as string,
+      tenant_id: complaint.tenant_id as string,
+      status: ComplaintStatusEnum.IN_PROGRESS,
+      start_solve_at: complaint.start_solve_at ?? new Date(),
+      max_time_to_solve: max_time_to_solve ? Number(max_time_to_solve) : null,
+    });
     const assignation =
       await this.complaintAssignerDBService.saveComplaintsAssigner(
         lang,
@@ -79,6 +87,7 @@ export class ComplaintsAssignerService {
           ),
           manager: manager as UserEntity,
           supporter: supporter as UserEntity,
+          complaint,
           note,
         }),
       );
@@ -96,14 +105,7 @@ export class ComplaintsAssignerService {
         choice_taked_at: new Date(),
       }),
     );
-    await this.complaintDBService.saveComplaint(lang, {
-      ...complaint,
-      id: complaint.id as string,
-      tenant_id: complaint.tenant_id as string,
-      status: ComplaintStatusEnum.IN_PROGRESS,
-      start_solve_at: complaint.start_solve_at ?? new Date(),
-      max_time_to_solve: max_time_to_solve ? Number(max_time_to_solve) : null,
-    });
+
     return {
       done: true,
       assignation_id: assignation.id,
