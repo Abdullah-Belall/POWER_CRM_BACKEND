@@ -6,6 +6,7 @@ import {
   Get,
   Param,
   ParseUUIDPipe,
+  Patch,
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -16,6 +17,7 @@ import { FisishComplaintDto } from './dto/finsish-complaint.dto';
 import { CreateComplaintGuard } from './guards/create.guard';
 import { ReadComplaintGuard } from './guards/read.guard';
 import { UpdateComplaintGuard } from './guards/update.guard';
+import { ChangePrioritySatutsComplaintDto } from './dto/change-priority-status.dto';
 
 @Controller('complaints')
 export class ComplaintsController {
@@ -41,6 +43,16 @@ export class ComplaintsController {
     return await this.complaintsService.findComplaints(tenant_id, {
       client_id: id,
     });
+  }
+
+  @Get('analytics')
+  @UseGuards(AuthGuard)
+  async getUserAnalytics(@User() { tenant_id, id, role }: UserTokenInterface) {
+    return await this.complaintsService.getUserAnalytics(
+      id,
+      tenant_id,
+      role.roles,
+    );
   }
 
   @Get('managers')
@@ -75,9 +87,34 @@ export class ComplaintsController {
     return await this.complaintsService.finishComplaint(user, id, status);
   }
 
+  @Patch(':id/change-priority-status')
+  @UseGuards(UpdateComplaintGuard)
+  async changePriorityStatus(
+    @User() user: UserTokenInterface,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() { priority_status }: ChangePrioritySatutsComplaintDto,
+  ) {
+    return await this.complaintsService.changeComplaintPriorityStatus(
+      user,
+      id,
+      priority_status,
+    );
+  }
+
   @Get('test')
   async test() {
     return await this.complaintsService.test();
+  }
+  @Get(':complaintId/supporter')
+  async getSupporterComplaint(
+    @User() { tenant_id, id }: UserTokenInterface,
+    @Param('complaintId', new ParseUUIDPipe()) complaintId: string,
+  ) {
+    return await this.complaintsService.findOneComplaint(
+      tenant_id,
+      complaintId,
+      id,
+    );
   }
   @Get(':id')
   @UseGuards(ReadComplaintGuard)

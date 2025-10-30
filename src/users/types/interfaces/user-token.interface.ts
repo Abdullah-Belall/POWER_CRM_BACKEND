@@ -8,7 +8,7 @@ export interface UserTokenInterface {
   role: {
     id: string;
     name: string;
-    roles: string;
+    roles: string[];
   };
   lang: LangsEnum;
 }

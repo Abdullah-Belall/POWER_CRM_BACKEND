@@ -28,19 +28,21 @@ export class DelayExcuseService {
       where: {
         id: complaint_id,
       },
-      relations: ['solving', 'solving.user'],
+      relations: ['solving', 'solving.supporter'],
       select: {
         solving: {
           id: true,
           accept_status: true,
-          user: {
+          supporter: {
             id: true,
           },
         },
       },
     });
     this.notFound(complaint, Translations.complaints.notFound[lang]);
-    const supporterSolving = complaint?.solving.filter((e) => e.user.id === id);
+    const supporterSolving = complaint?.solving.filter(
+      (e) => e.supporter.id === id,
+    );
     const isCanAdd = supporterSolving?.some(
       (e) => e.accept_status === SupporterReferAcceptEnum.ACCEPTED,
     );
@@ -54,7 +56,7 @@ export class DelayExcuseService {
           complaint_id,
         ),
         complaint: complaint as ComplaintEntity,
-        user: supporterSolving![0]?.user,
+        user: supporterSolving![0]?.supporter,
         excuse,
       }),
     );

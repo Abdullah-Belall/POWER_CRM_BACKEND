@@ -3,8 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateComplaintsSolvingDto } from './dto/create-complaints-solving.dto';
-import { UpdateComplaintsSolvingDto } from './dto/update-complaints-solving.dto';
 import { ComplaintSolvingDBService } from './DB_Service/complaints-solving_db.service';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { ComplaintDBService } from 'src/complaints/DB_Service/complaints_db.service';
@@ -15,7 +13,6 @@ import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { ComplaintEntity } from 'src/complaints/entities/complaint.entity';
-import { ComplaintsSolvingEntity } from './entities/complaints-solving.entity';
 
 @Injectable()
 export class ComplaintsSolvingService {
@@ -54,7 +51,7 @@ export class ComplaintsSolvingService {
           tenant_id,
           complaint_id,
         ),
-        user: manager,
+        supporter: manager,
         complaint,
         accept_status: SupporterReferAcceptEnum.ACCEPTED,
         choice_taked_at: new Date(),
@@ -84,7 +81,7 @@ export class ComplaintsSolvingService {
     const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
       .leftJoinAndSelect('complaint.solving', 'solving')
-      .leftJoinAndSelect('solving.user', 'supporter')
+      .leftJoinAndSelect('solving.supporter', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
       .orderBy('solving.created_at', 'DESC')
@@ -92,7 +89,8 @@ export class ComplaintsSolvingService {
     this.notFound(complaint, Translations.complaints.notFound[lang]);
     if (complaint?.status !== ComplaintStatusEnum.IN_PROGRESS)
       throw new BadRequestException();
-    if (complaint?.solving[0]?.user?.id !== id) throw new BadRequestException();
+    if (complaint?.solving[0]?.supporter?.id !== id)
+      throw new BadRequestException();
     if (
       complaint?.solving[0].accept_status !== SupporterReferAcceptEnum.ACCEPTED
     )
@@ -110,7 +108,7 @@ export class ComplaintsSolvingService {
           tenant_id,
           complaint_id,
         ),
-        user: newSupporter as UserEntity,
+        supporter: newSupporter as UserEntity,
         complaint,
       }),
     );
@@ -129,7 +127,7 @@ export class ComplaintsSolvingService {
       where: {
         id: solving_id,
         tenant_id,
-        user: { id },
+        supporter: { id },
       },
       relations: ['complaint'],
     });

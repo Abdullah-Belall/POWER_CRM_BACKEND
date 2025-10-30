@@ -6,3 +6,9 @@ export enum ComplaintStatusEnum {
   CANCELLED = 'Cancelled',
   CLIENT_CANCELLED = 'Client Cancelled',
 }
+
+export enum ComplaintPriorityStatusEnum {
+  HIGH = 'High',
+  NORMAL = 'Normal',
+  LOW = 'Low',
+}

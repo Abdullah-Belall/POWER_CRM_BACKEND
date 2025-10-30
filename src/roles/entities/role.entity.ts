@@ -20,8 +20,8 @@ export class RoleEntity {
   name: string;
   @Column({ type: 'int' })
   code: number;
-  @Column()
-  roles: string;
+  @Column({ type: 'jsonb', default: [] })
+  roles;
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
   @UpdateDateColumn({ type: 'timestamptz' })

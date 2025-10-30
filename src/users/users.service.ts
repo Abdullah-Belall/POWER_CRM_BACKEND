@@ -18,7 +18,7 @@ export class UsersService {
 
   async createUser(
     { tenant_id, lang }: UserTokenInterface,
-    { user_name, email, password, role_id }: CreateUserDto,
+    { user_name, email, password, phone, role_id }: CreateUserDto,
   ) {
     const isDuplicateUser = await this.usersDBService.findOneUser({
       where: {
@@ -49,6 +49,7 @@ export class UsersService {
         role,
         email,
         password: passwordHash,
+        phone,
       }),
     );
     return {
@@ -56,17 +57,16 @@ export class UsersService {
       id: user.id,
     };
   }
-  async findAllUsers(tenant_id: string, role?: string) {
+  async findAllUsers(tenant_id: string, roles?: string[]) {
     const qb = this.usersDBService
       .usersQB('user')
       .where('user.tenant_id = :tenant_id', { tenant_id })
       .leftJoin('user.role', 'role')
-      .addSelect(['role.id', 'role.name', 'role.code'])
+      .addSelect(['role.id', 'role.name', 'role.code', 'role.roles'])
       .loadRelationCountAndMap('user.complaints_count', 'user.complaints')
       .loadRelationCountAndMap('user.solving_count', 'user.complaints_solving');
-    if (role) {
-      // qb.andWhere('role.id = :role_id', { role_id });
-      qb.andWhere('role.name = :role', { role });
+    if (roles && roles.length > 0) {
+      qb.andWhere(`role.roles ?& :roles`, { roles });
     }
     const [users, total] = await qb
       .orderBy('user.created_at', 'DESC')

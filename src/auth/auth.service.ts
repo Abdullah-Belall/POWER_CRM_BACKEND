@@ -37,6 +37,8 @@ export class AuthService {
       'read-role',
       'update-role',
 
+      'sub-complaint-f-client',
+      'self-solve-complaint',
       'create-complaint',
       'read-complaint',
       'assign-complaint',
@@ -63,7 +65,7 @@ export class AuthService {
         tenant_id: tenant.tenant_id,
         name: 'Big_Boss',
         code: 1,
-        roles: JSON.stringify(roles),
+        roles,
       }),
     );
     await this.usersDBService.saveUser(

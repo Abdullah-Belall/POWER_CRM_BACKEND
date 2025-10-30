@@ -11,11 +11,9 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './decorators/user.decorator';
 import type { UserTokenInterface } from './types/interfaces/user-token.interface';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { ReadUserGuard } from './guards/read.guard';
 import { CreateUserGuard } from './guards/create.guard';
 
 @Controller('users')
@@ -32,9 +30,10 @@ export class UsersController {
   @UseGuards(AuthGuard)
   async findUsers(
     @User() { tenant_id }: UserTokenInterface,
-    @Query('role') role_id: string,
+    @Query('roleAttributes') roleAttributes: string,
   ) {
-    return await this.usersService.findAllUsers(tenant_id, role_id);
+    const roles = roleAttributes ? JSON.parse(roleAttributes) : undefined;
+    return await this.usersService.findAllUsers(tenant_id, roles);
   }
   @Post('create')
   @UseGuards(CreateUserGuard)

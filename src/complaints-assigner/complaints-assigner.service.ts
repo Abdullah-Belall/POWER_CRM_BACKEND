@@ -32,7 +32,7 @@ export class ComplaintsAssignerService {
   ) {
     const complaint = await this.complaintDBService.findOneComplaint({
       where: { id: complaint_id, tenant_id },
-      relations: ['solving', 'solving.user'],
+      relations: ['solving', 'solving.supporter'],
     });
     if (!complaint)
       throw new NotFoundException(Translations.complaints.notFound[lang]);
@@ -40,7 +40,7 @@ export class ComplaintsAssignerService {
       complaint?.status !== ComplaintStatusEnum.PENDING &&
       complaint?.status !== ComplaintStatusEnum.SUSPENDED &&
       complaint?.status === ComplaintStatusEnum.IN_PROGRESS &&
-      !complaint.solving.find((e) => e.user.id === manager_id)
+      !complaint.solving.find((e) => e.supporter.id === manager_id)
     ) {
       throw new BadRequestException();
     }
@@ -58,7 +58,7 @@ export class ComplaintsAssignerService {
       },
     });
     this.notFound(supporter, Translations.user.notFound[lang]);
-    if (!JSON.parse(supporter?.role?.roles as string)?.includes('assignable')) {
+    if (!supporter?.role?.roles?.includes('assignable')) {
       throw new BadRequestException();
     }
     const manager = await this.usersDBService.findOneUser({
@@ -99,7 +99,7 @@ export class ComplaintsAssignerService {
           tenant_id,
           complaint_id,
         ),
-        user: supporter as UserEntity,
+        supporter: supporter as UserEntity,
         complaint,
         accept_status: SupporterReferAcceptEnum.ACCEPTED,
         choice_taked_at: new Date(),

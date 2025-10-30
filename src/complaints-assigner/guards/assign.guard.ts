@@ -16,7 +16,7 @@ export class AssignComplaintGuard implements CanActivate {
     if (!request.user) {
       throw new UnauthorizedException();
     }
-    const roles: string[] = JSON.parse(request.user?.role?.roles);
+    const roles = request.user?.role?.roles;
     if (roles.includes('assign-complaint')) return true;
     return false;
   }

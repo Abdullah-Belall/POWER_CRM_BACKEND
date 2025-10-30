@@ -1,4 +1,7 @@
-import { ComplaintStatusEnum } from 'src/utils/types/enums/complaint-status.enum';
+import {
+  ComplaintPriorityStatusEnum,
+  ComplaintStatusEnum,
+} from 'src/utils/types/enums/complaint-status.enum';
 import {
   Column,
   CreateDateColumn,
@@ -26,9 +29,10 @@ export class ComplaintEntity {
     cascade: true,
   })
   delay_excuses: DelayExcusesEntity[];
-  //* CLIENT
+  @ManyToOne(() => UserEntity, (user) => user.presenter_complaints)
+  presenter: UserEntity;
   @ManyToOne(() => UserEntity, (user) => user.complaints)
-  user: UserEntity;
+  client: UserEntity;
   @OneToMany(() => ComplaintsSolvingEntity, (solve) => solve.complaint, {
     cascade: true,
   })
@@ -45,12 +49,24 @@ export class ComplaintEntity {
   title: string;
   @Column()
   details: string;
+  @Column({ nullable: true })
+  image1: string;
+  @Column({ nullable: true })
+  image2: string;
   @Column({ type: 'enum', enum: ScreenViewerEnum })
   screen_viewer: ScreenViewerEnum;
   @Column()
   screen_viewer_id: string;
   @Column({ nullable: true })
   screen_viewer_password: string;
+  @Column({ type: 'enum', enum: ScreenViewerEnum, nullable: true })
+  server_viewer: ScreenViewerEnum;
+  @Column({ nullable: true })
+  server_viewer_id: string;
+  @Column({ nullable: true })
+  server_viewer_password: string;
+  @Column({ type: 'timestamptz', nullable: true })
+  intervention_date: Date | null;
   @Column({ type: 'int', nullable: true })
   max_time_to_solve: number | null;
   @Column({ type: 'timestamptz', nullable: true })
@@ -63,6 +79,12 @@ export class ComplaintEntity {
     default: ComplaintStatusEnum.PENDING,
   })
   status: ComplaintStatusEnum;
+  @Column({
+    type: 'enum',
+    enum: ComplaintPriorityStatusEnum,
+    default: ComplaintPriorityStatusEnum.NORMAL,
+  })
+  priority_status: ComplaintPriorityStatusEnum;
   @Column({ type: 'boolean', nullable: true })
   accept_excuse: boolean | null;
   @CreateDateColumn({ type: 'timestamptz' })

@@ -27,7 +27,9 @@ export class UserEntity {
   @ManyToOne(() => RoleEntity, (role) => role.users)
   role: RoleEntity;
   //* FOR CLIENTS ONLY
-  @OneToMany(() => ComplaintEntity, (comp) => comp.user, { cascade: true })
+  @OneToMany(() => ComplaintEntity, (comp) => comp.presenter, { cascade: true })
+  presenter_complaints: ComplaintEntity[];
+  @OneToMany(() => ComplaintEntity, (comp) => comp.client, { cascade: true })
   complaints: ComplaintEntity[];
   @OneToMany(() => ComplaintsAssignerEntity, (comp) => comp.manager, {
     cascade: true,
@@ -37,7 +39,7 @@ export class UserEntity {
     cascade: true,
   })
   supporter_assignments: ComplaintsAssignerEntity[];
-  @OneToMany(() => ComplaintsSolvingEntity, (comp) => comp.user, {
+  @OneToMany(() => ComplaintsSolvingEntity, (comp) => comp.supporter, {
     cascade: true,
   })
   complaints_solving: ComplaintsSolvingEntity[];
@@ -48,6 +50,8 @@ export class UserEntity {
   solve_delay_excuses: DelayExcusesEntity[];
   @Column({ unique: true })
   user_name: string;
+  @Column({ nullable: true })
+  phone: string;
   @Column({ unique: true, nullable: true })
   email: string;
   @OneToOne(() => TelegramEntity, (teleg) => teleg.user, { cascade: true })

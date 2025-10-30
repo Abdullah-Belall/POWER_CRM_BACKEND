@@ -19,7 +19,7 @@ export class ComplaintsSolvingEntity {
   index: number;
   //* SUPPORTER
   @ManyToOne(() => UserEntity, (user) => user.complaints_solving)
-  user: UserEntity;
+  supporter: UserEntity;
   @ManyToOne(() => ComplaintEntity, (comp) => comp.solving)
   complaint: ComplaintEntity;
   @Column({

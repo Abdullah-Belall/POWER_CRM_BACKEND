@@ -16,7 +16,7 @@ export class SolveComplaintGuard implements CanActivate {
     if (!request.user) {
       throw new UnauthorizedException();
     }
-    const roles: string[] = JSON.parse(request.user?.role?.roles);
+    const roles = request.user?.role?.roles;
     if (roles.includes('self-solve-complaint')) return true;
     return false;
   }

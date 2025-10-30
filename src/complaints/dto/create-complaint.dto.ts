@@ -1,7 +1,17 @@
-import { IsEnum, IsPhoneNumber, IsString, MinLength } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 import { ScreenViewerEnum } from 'src/utils/types/enums/screen-viewer.enum';
 
 export class CreateComplaintDto {
+  @IsUUID()
+  client_id: string;
   @IsString()
   full_name: string;
   @IsPhoneNumber('EG')
@@ -17,5 +27,24 @@ export class CreateComplaintDto {
   @IsString()
   screen_viewer_id: string;
   @IsString()
+  @IsOptional()
   screen_viewer_password: string;
+  @IsEnum(ScreenViewerEnum)
+  @IsOptional()
+  server_viewer: ScreenViewerEnum;
+  @IsString()
+  @IsOptional()
+  server_viewer_id: string;
+  @IsString()
+  @IsOptional()
+  server_viewer_password: string;
+  @IsString()
+  @IsOptional()
+  image1: string;
+  @IsString()
+  @IsOptional()
+  image2: string;
+  @IsDateString()
+  @IsOptional()
+  intervention_date: string;
 }

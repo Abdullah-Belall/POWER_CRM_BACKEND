@@ -38,7 +38,7 @@ export class RolesService {
         tenant_id,
         name,
         code,
-        roles,
+        roles: JSON.parse(roles),
       }),
     );
     return {
@@ -58,7 +58,7 @@ export class RolesService {
       },
     });
     if (!role) throw new BadRequestException();
-    role.roles = roles;
+    role.roles = JSON.parse(roles);
     await this.roleDBService.saveRoles(lang, role);
     return {
       done: true,
@@ -77,10 +77,15 @@ export class RolesService {
     };
   }
   async rolesSelectList(tenant_id: string) {
-    return await this.roleDBService
+    const [roles, total] = await this.roleDBService
       .rolesQB('role')
       .where('role.tenant_id = :tenant_id', { tenant_id })
       .select(['role.id', 'role.name'])
-      .getMany();
+      .getManyAndCount();
+
+    return {
+      roles,
+      total,
+    };
   }
 }

@@ -1,6 +1,7 @@
 import {
   IsEmail,
   IsOptional,
+  IsPhoneNumber,
   IsString,
   IsUUID,
   MinLength,
@@ -15,6 +16,8 @@ export class CreateUserDto {
   @IsEmail()
   @IsOptional()
   email: string;
+  @IsPhoneNumber('EG')
+  phone: string;
   @IsString()
   @MinLength(8)
   password: string;

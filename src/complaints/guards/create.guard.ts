@@ -16,8 +16,12 @@ export class CreateComplaintGuard implements CanActivate {
     if (!request.user) {
       throw new UnauthorizedException();
     }
-    const roles: string[] = JSON.parse(request.user?.role?.roles);
-    if (roles.includes('create-complaint')) return true;
+    const roles = request.user?.role?.roles;
+    if (
+      roles.includes('create-complaint') ||
+      roles.includes('sub-complaint-f-client')
+    )
+      return true;
     return false;
   }
 }
