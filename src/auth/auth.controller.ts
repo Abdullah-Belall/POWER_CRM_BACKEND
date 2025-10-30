@@ -26,6 +26,11 @@ export class AuthController {
     return await this.authService.signFirstUser();
   }
 
+  @Get('sign-suser')
+  async signNormalFUser() {
+    return await this.authService.signNormalFUser();
+  }
+
   @Post('sign-in')
   async SignIn(
     @Body() signInDto: SignInDto,

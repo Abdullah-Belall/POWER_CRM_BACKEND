@@ -82,6 +82,57 @@ export class AuthService {
     return { done: true };
   }
 
+  async signNormalFUser() {
+    const roles = [
+      'create-user',
+      'read-user',
+      'update-user',
+
+      'create-role',
+      'read-role',
+      'update-role',
+
+      'sub-complaint-f-client',
+      'self-solve-complaint',
+
+      'read-complaint',
+      'assign-complaint',
+      'update-complaint',
+    ];
+    const tenant = await this.tenantDBService.saveTenant(
+      LangsEnum.EN,
+      this.tenantDBService.createTenantInstance({
+        index: 1,
+        domain: 'power-soft-crm.nabdtech.store',
+        company_title: 'POWER SOFT',
+        company_logo: '',
+        phone: '+201009517926',
+        is_active: true,
+      }),
+    );
+    const role = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Manager',
+        code: 2,
+        roles,
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1,
+        user_name: 'manager11',
+        role,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    return { done: true };
+  }
+
   async SignIn(
     { user_name, password, tenant_domain, lang }: SignInDto,
     response: Response,
