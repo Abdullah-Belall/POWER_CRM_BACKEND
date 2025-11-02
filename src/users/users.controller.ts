@@ -24,7 +24,10 @@ import { diskStorage } from 'multer';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
+  @Get('testotra')
+  async tempoDelete() {
+    return await this.usersService.tempoDelete();
+  }
   @Get('profile')
   @UseGuards(AuthGuard)
   async profile(@User() { id, tenant_id }: UserTokenInterface) {

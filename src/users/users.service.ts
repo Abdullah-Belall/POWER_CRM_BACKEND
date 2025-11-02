@@ -120,10 +120,10 @@ export class UsersService {
       const user = this.usersDBService.createUserInstance({
         tenant_id,
         index: nextIndex,
-        user_name: row['user_name'],
-        email: row['email'],
+        user_name: row['user_name']?.trim(),
+        email: row['email']?.trim(),
         password: `$2a$12$4OevOM9gwRFzl443nKJuX.bGcUmqRkTNQlz2mUKDauXKfiZZTn/h.`,
-        phone: row['phone'] ? `+20` + row['phone'] : null,
+        phone: row['phone'] ? `+20` + row['phone']?.trim() : null,
         role,
       });
       readUsers.push(user);
@@ -131,5 +131,13 @@ export class UsersService {
     }
     await this.usersDBService.saveUser(LangsEnum.AR, readUsers as any);
     return { done: true };
+  }
+  async tempoDelete() {
+    for (let i = 3002; i <= 3015; i++) {
+      const user = await this.usersDBService.findOneUser({
+        where: { index: i },
+      });
+      await this.usersDBService.getUsersRepo().delete(user?.id as string);
+    }
   }
 }
