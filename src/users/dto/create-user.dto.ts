@@ -13,10 +13,11 @@ export class CreateUserDto {
   @IsString()
   @MinLength(4)
   user_name: string;
-  @IsEmail()
   @IsOptional()
+  @IsString()
   email: string;
-  @IsPhoneNumber('EG')
+  @IsString()
+  @IsOptional()
   phone: string;
   @IsString()
   @MinLength(8)
