@@ -52,7 +52,7 @@ export class UserEntity {
   user_name: string;
   @Column({ nullable: true })
   phone: string;
-  @Column({ unique: true, nullable: true })
+  @Column({ nullable: true })
   email: string;
   @OneToOne(() => TelegramEntity, (teleg) => teleg.user, { cascade: true })
   @JoinColumn()

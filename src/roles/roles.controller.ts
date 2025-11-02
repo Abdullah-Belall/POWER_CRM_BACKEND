@@ -42,7 +42,6 @@ export class RolesController {
     return await this.rolesService.findAllRoles(tenant_id);
   }
   @Get('select-list')
-  @UseGuards(CreateRoleGuard)
   async rolesSelectList(@User() { tenant_id }: UserTokenInterface) {
     return await this.rolesService.rolesSelectList(tenant_id);
   }

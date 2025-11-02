@@ -21,7 +21,7 @@ export class RoleEntity {
   @Column({ type: 'int' })
   code: number;
   @Column({ type: 'jsonb', default: [] })
-  roles;
+  roles: string[];
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
   @UpdateDateColumn({ type: 'timestamptz' })

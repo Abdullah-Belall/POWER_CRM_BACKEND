@@ -80,7 +80,7 @@ export class RolesService {
     const [roles, total] = await this.roleDBService
       .rolesQB('role')
       .where('role.tenant_id = :tenant_id', { tenant_id })
-      .select(['role.id', 'role.name'])
+      .select(['role.id', 'role.code', 'role.name'])
       .getManyAndCount();
 
     return {
