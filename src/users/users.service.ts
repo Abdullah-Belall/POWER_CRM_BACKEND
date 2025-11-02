@@ -120,10 +120,10 @@ export class UsersService {
       const user = this.usersDBService.createUserInstance({
         tenant_id,
         index: nextIndex,
-        user_name: row['user_name']?.trim(),
-        email: row['email']?.trim(),
+        user_name: row['user_name'] ? row['user_name']?.trim() : undefined,
+        email: row['email'] ? row['email']?.trim() : undefined,
         password: `$2a$12$4OevOM9gwRFzl443nKJuX.bGcUmqRkTNQlz2mUKDauXKfiZZTn/h.`,
-        phone: row['phone'] ? `+20` + row['phone']?.trim() : null,
+        phone: row['phone'] ? `+20` + row['phone'] : null,
         role,
       });
       readUsers.push(user);
