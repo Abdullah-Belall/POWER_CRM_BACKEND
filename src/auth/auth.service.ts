@@ -5,8 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { SignInDto } from './dto/create-auth.dto';
-import { UsersService } from 'src/users/users.service';
-import { compare } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import { Response } from 'express';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
@@ -14,6 +13,8 @@ import { TenantDBService } from 'src/tenants/DB_Services/tenant_db.service';
 import { Translations } from 'src/utils/base';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { RolesDBService } from 'src/roles/DB_Service/roles_db.service';
+import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -206,6 +207,8 @@ export class AuthService {
     if (!user) {
       throw new ForbiddenException(Translations.user.notFound[lang]);
     }
+    // const isDefaultPass = await compare('123456789', user.password);
+    // if (isDefaultPass) throw new ForbiddenException();
     const dataObj = {
       id: user.id,
       index: user.index,
@@ -235,9 +238,30 @@ export class AuthService {
       done: true,
     };
   }
+  async changePassword(
+    { tenant_id, id, lang }: UserTokenInterface,
+    { old_password, new_password }: ChangePasswordDto,
+  ) {
+    const user = await this.usersDBService.findOneUser({
+      where: {
+        id,
+        tenant_id,
+      },
+    });
+    if (!user) throw new NotFoundException();
+    const isPasswordValid = await compare(old_password, user?.password);
+    if (!isPasswordValid) {
+      throw new ConflictException(Translations.user.wrongPass[lang]);
+    }
+    user.password = await hash(new_password, 12);
+    await this.usersDBService.saveUser(lang, user);
+    return {
+      done: true,
+    };
+  }
   private generateAccessToken(payload: object): string {
     return jwt.sign(payload, process.env.JWT_ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: '15m',
+      expiresIn: '5m',
     });
   }
   private generateRefreshToken(payload: object): string {

@@ -16,6 +16,7 @@ import { User } from 'src/users/decorators/user.decorator';
 import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { RefreshGuard } from './guards/refresh-token.guard';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -37,6 +38,15 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return await this.authService.SignIn(signInDto, response);
+  }
+
+  @Post('change-password')
+  @UseGuards(AuthGuard)
+  async changePassword(
+    @User() user: UserTokenInterface,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return await this.authService.changePassword(user, changePasswordDto);
   }
 
   @Get('refresh-token')
