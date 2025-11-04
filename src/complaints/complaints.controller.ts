@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { ComplaintsService } from './complaints.service';
 import { CreateComplaintDto } from './dto/create-complaint.dto';
@@ -18,6 +19,7 @@ import { CreateComplaintGuard } from './guards/create.guard';
 import { ReadComplaintGuard } from './guards/read.guard';
 import { UpdateComplaintGuard } from './guards/update.guard';
 import { ChangePrioritySatutsComplaintDto } from './dto/change-priority-status.dto';
+import { ComplaintStatusEnum } from 'src/utils/types/enums/complaint-status.enum';
 
 @Controller('complaints')
 export class ComplaintsController {
@@ -57,8 +59,35 @@ export class ComplaintsController {
 
   @Get('managers')
   @UseGuards(ReadComplaintGuard)
-  async getManagersComplaints(@User() { tenant_id }: UserTokenInterface) {
-    return await this.complaintsService.findComplaints(tenant_id, {}, true);
+  async getManagersComplaints(
+    @User() { tenant_id }: UserTokenInterface,
+    @Query('client_id') client_id: string,
+    @Query('status') status: ComplaintStatusEnum,
+    @Query('created_from') created_from: Date,
+    @Query('created_to') created_to: Date,
+    @Query('ordered_by') ordered_by: 'DESC' | 'ASC',
+  ) {
+    return await this.complaintsService.findComplaints(
+      tenant_id,
+      {
+        client_id:
+          client_id && client_id !== 'undefined' ? client_id : undefined,
+        status: status && (status as any) !== 'undefined' ? status : undefined,
+        created_from:
+          created_from && (created_from as any) !== 'undefined'
+            ? created_from
+            : undefined,
+        created_to:
+          created_to && (created_to as any) !== 'undefined'
+            ? created_to
+            : undefined,
+        ordered_by:
+          ordered_by && (ordered_by as any) !== 'undefined'
+            ? ordered_by
+            : undefined,
+      },
+      true,
+    );
   }
 
   @Get()

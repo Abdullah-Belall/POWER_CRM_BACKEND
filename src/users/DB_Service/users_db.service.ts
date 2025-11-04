@@ -80,32 +80,32 @@ export class UsersDBService {
     role_id?: string,
   ) {
     const queryB = this.usersRepo
-      .createQueryBuilder('user')
-      .where('user.tenant_id = :tenant_id', { tenant_id })
-      .loadRelationCountAndMap('user.complaints_count', 'user.complaints')
-      .loadRelationCountAndMap('user.solving_count', 'user.complaints_solving');
+      .createQueryBuilder('u')
+      .where('u.tenant_id = :tenant_id', { tenant_id })
+      .loadRelationCountAndMap('u.complaints_count', 'u.complaints')
+      .loadRelationCountAndMap('u.solving_count', 'u.complaints_solving');
 
     if (role_id) {
       queryB
-        .leftJoin('user.role', 'role')
+        .leftJoin('u.role', 'role')
         .addSelect(['role.id', 'role.name', 'role.code', 'role.roles'])
         .andWhere('role.id = :role_id', { role_id });
     }
 
     const term = `%${search_with}%`;
     if (column) {
-      queryB.andWhere(`user.${column} ILIKE :term`, { term: term });
+      queryB.andWhere(`${column} ILIKE :term`, { term });
     } else {
       queryB.andWhere(
         new Brackets((subQb) =>
           subQb
-            .where('user.name ILIKE :term', { nameTerm: term })
-            .orWhere('user.phone ILIKE :term', { term: term })
-            .orWhere('user.email ILIKE :term', { term: term }),
+            .where('u.user_name ILIKE :term', { term })
+            .orWhere('u.phone ILIKE :term', { term })
+            .orWhere('u.email ILIKE :term', { term }),
         ),
       );
     }
-    queryB.orderBy('user.created_at', created_sort ?? 'DESC');
+    queryB.orderBy('u.created_at', created_sort ?? 'DESC');
     const [data, total] = await queryB.getManyAndCount();
     return {
       data,

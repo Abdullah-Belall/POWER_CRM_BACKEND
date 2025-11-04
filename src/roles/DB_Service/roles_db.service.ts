@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleEntity } from '../entities/role.entity';
 import {
+  Brackets,
   DeepPartial,
   FindOptionsOrder,
   FindOptionsSelect,
@@ -57,5 +58,35 @@ export class RolesDBService {
       throw new InternalServerErrorException(Translations.errorMsg[lang]);
     }
     return saved;
+  }
+  async searchEngine(
+    tenant_id: string,
+    search_with: string,
+    column?: string,
+    created_sort?: 'ASC' | 'DESC',
+  ) {
+    const queryB = this.rolesRepo
+      .createQueryBuilder('role')
+      .where('role.tenant_id = :tenant_id', { tenant_id })
+      .loadRelationCountAndMap('role.users_count', 'role.users');
+
+    const term = `%${search_with}%`;
+    if (column) {
+      queryB.andWhere(`CAST(${column} AS TEXT) ILIKE :term`, { term });
+    } else {
+      queryB.andWhere(
+        new Brackets((subQb) =>
+          subQb
+            .where('CAST(role.code AS TEXT) ILIKE :term', { term })
+            .orWhere('role.name ILIKE :term', { term }),
+        ),
+      );
+    }
+    queryB.orderBy('role.created_at', created_sort ?? 'DESC');
+    const [data, total] = await queryB.getManyAndCount();
+    return {
+      data,
+      total,
+    };
   }
 }

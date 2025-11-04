@@ -17,12 +17,14 @@ import {
   ComplaintStatusEnum,
 } from 'src/utils/types/enums/complaint-status.enum';
 import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-accept.enum';
+import { TelegramService } from 'src/telegram/telegram.service';
 
 @Injectable()
 export class ComplaintsService {
   constructor(
     private readonly complaintDBService: ComplaintDBService,
     private readonly usersDBService: UsersDBService,
+    private readonly telegramService: TelegramService,
   ) {}
   async createComplaint(
     tenant_id: string,
@@ -54,6 +56,7 @@ export class ComplaintsService {
       lang,
       complaintInstance,
     );
+    await this.telegramService.sendComplaint(complaint, ['5726273594']);
     return {
       done: true,
       id: complaint.id,
@@ -68,6 +71,7 @@ export class ComplaintsService {
       accept_excuse,
       created_from,
       created_to,
+      ordered_by = 'DESC',
     }: ComplaintsFilterInterface,
     managers: boolean = false,
   ) {
@@ -96,16 +100,7 @@ export class ComplaintsService {
       });
     }
     if (status) {
-      const status_arr = JSON.parse(status);
-      qb.andWhere(
-        new Brackets((qb2) => {
-          qb2.where('complaint.status = :status', { status: status_arr[0] });
-          status_arr.splice(0, 1);
-          for (const status of status_arr) {
-            qb2.orWhere('complaint.status = :status', { status });
-          }
-        }),
-      );
+      qb.where('complaint.status = :status', { status });
     }
     const accept_excuse_fixed =
       typeof accept_excuse === 'boolean'
@@ -134,7 +129,7 @@ export class ComplaintsService {
         created_to: new Date(created_to),
       });
     }
-    qb.orderBy('complaint.created_at', 'DESC');
+    qb.orderBy('complaint.created_at', ordered_by);
     const [complaints, total] = await qb.getManyAndCount();
     return {
       complaints,

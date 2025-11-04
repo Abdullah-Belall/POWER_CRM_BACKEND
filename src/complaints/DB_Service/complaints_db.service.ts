@@ -8,6 +8,7 @@ import {
   FindOptionsWhere,
   FindOptionsSelect,
   FindOptionsOrder,
+  Brackets,
 } from 'typeorm';
 import { Translations } from 'src/utils/base';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
@@ -74,5 +75,43 @@ export class ComplaintDBService {
       relations,
     });
     return { complaints, total };
+  }
+  async searchEngine(
+    tenant_id: string,
+    search_with: string,
+    column?: string,
+    created_sort?: 'ASC' | 'DESC',
+    client_id?: string,
+  ) {
+    const queryB = this.complaintRepo
+      .createQueryBuilder('complaint')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
+      .leftJoin('complaint.client', 'client');
+    if (client_id) {
+      queryB.andWhere('client.id = :client_id', { client_id });
+    } else {
+      queryB.addSelect(['client.id', 'client.user_name']);
+    }
+    const term = `%${search_with}%`;
+    if (column) {
+      queryB.andWhere(`CAST(${column} AS TEXT) ILIKE :term`, { term });
+    } else {
+      queryB.andWhere(
+        new Brackets((subQb) =>
+          subQb
+            .where('client.user_name ILIKE :term', { term })
+            .orWhere('complaint.full_name ILIKE :term', { term })
+            .orWhere('complaint.phone ILIKE :term', { term })
+            .orWhere('complaint.title ILIKE :term', { term })
+            .orWhere('complaint.details ILIKE :term', { term }),
+        ),
+      );
+    }
+    queryB.orderBy('complaint.created_at', created_sort ?? 'DESC');
+    const [data, total] = await queryB.getManyAndCount();
+    return {
+      data,
+      total,
+    };
   }
 }

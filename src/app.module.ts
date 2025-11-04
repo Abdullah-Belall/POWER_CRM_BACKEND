@@ -12,6 +12,7 @@ import { ComplaintsAssignerModule } from './complaints-assigner/complaints-assig
 import { DelayExcuseModule } from './delay-excuse/delay-excuse.module';
 import { RolesModule } from './roles/roles.module';
 import { CommonModule } from './common/common.module';
+import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CommonModule } from './common/common.module';
     DelayExcuseModule,
     RolesModule,
     CommonModule,
+    PdfGeneratorModule,
   ],
 })
 export class AppModule implements NestModule {

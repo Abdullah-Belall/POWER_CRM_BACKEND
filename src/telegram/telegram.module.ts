@@ -3,10 +3,12 @@ import { TelegramService } from './telegram.service';
 import { TelegramController } from './telegram.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TelegramEntity } from './entities/telegram.entity';
+import { PdfGeneratorModule } from 'src/pdf-generator/pdf-generator.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TelegramEntity])],
+  imports: [TypeOrmModule.forFeature([TelegramEntity]), PdfGeneratorModule],
   controllers: [TelegramController],
   providers: [TelegramService],
+  exports: [TelegramService],
 })
 export class TelegramModule {}

@@ -17,7 +17,6 @@ export class ReadRoleGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     const roles = request.user?.role?.roles;
-    console.log(roles);
     if (roles.includes('read-role')) return true;
     return false;
   }

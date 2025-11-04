@@ -32,3 +32,4 @@ export const Translations = {
     },
   },
 };
+export const allowedSearchTables = ['users', 'roles', 'complaints'];
