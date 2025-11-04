@@ -5,14 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TelegramEntity } from './entities/telegram.entity';
 import { PdfGeneratorModule } from 'src/pdf-generator/pdf-generator.module';
 import { UsersModule } from 'src/users/users.module';
-import { TenantsEntity } from 'src/tenants/entities/tenant.entity';
+import { TenantsModule } from 'src/tenants/tenants.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TelegramEntity]),
     PdfGeneratorModule,
     UsersModule,
-    TenantsEntity,
+    TenantsModule,
   ],
   controllers: [TelegramController],
   providers: [TelegramService],
