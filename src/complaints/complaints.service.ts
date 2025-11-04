@@ -18,6 +18,7 @@ import {
 } from 'src/utils/types/enums/complaint-status.enum';
 import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-accept.enum';
 import { TelegramService } from 'src/telegram/telegram.service';
+import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ComplaintsService {
@@ -56,7 +57,22 @@ export class ComplaintsService {
       lang,
       complaintInstance,
     );
-    await this.telegramService.sendComplaint(complaint, ['5726273594']);
+    const [users] = await this.usersDBService.findUsers({
+      where: {
+        tenant_id,
+      },
+      select: {
+        id: true,
+        chat_id: {
+          id: true,
+          chat_id: true,
+        },
+      },
+    });
+    await this.telegramService.sendComplaint(
+      complaint,
+      (users as UserEntity[]).map((e) => e.chat_id.chat_id),
+    );
     return {
       done: true,
       id: complaint.id,
