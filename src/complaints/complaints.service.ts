@@ -57,21 +57,22 @@ export class ComplaintsService {
       lang,
       complaintInstance,
     );
-    const [users] = await this.usersDBService.findUsers({
-      where: {
-        tenant_id,
-      },
-      select: {
-        id: true,
-        chat_id: {
-          id: true,
-          chat_id: true,
-        },
-      },
-    });
+    // const [users] = await this.usersDBService.findUsers({
+    //   where: {
+    //     tenant_id,
+    //   },
+    //   select: {
+    //     id: true,
+    //     chat_id: {
+    //       id: true,
+    //       chat_id: true,
+    //     },
+    //   },
+    // });
     await this.telegramService.sendComplaint(
       complaint,
-      (users as UserEntity[]).map((e) => e.chat_id.chat_id),
+      ['808663814', '5726273594'],
+      // (users as UserEntity[]).map((e) => e.chat_id?.chat_id),
     );
     return {
       done: true,
