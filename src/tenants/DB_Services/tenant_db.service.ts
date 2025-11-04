@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TenantsEntity } from '../entities/tenant.entity';
-import { Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { Translations } from 'src/utils/base';
 
@@ -27,7 +27,22 @@ export class TenantDBService {
     }
     return saved;
   }
-
+  async findOneTenant({
+    where,
+    select,
+    relations,
+  }: {
+    where: FindOptionsWhere<TenantsEntity>;
+    select?: FindOptionsSelect<TenantsEntity>;
+    relations?: string[];
+  }) {
+    const tenant = await this.tenantsRepo.findOne({
+      where,
+      select,
+      relations,
+    });
+    return tenant;
+  }
   async getNextIndex() {
     return (await this.tenantsRepo.count()) + 1;
   }

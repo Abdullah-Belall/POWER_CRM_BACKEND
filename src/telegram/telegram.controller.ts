@@ -15,4 +15,8 @@ export class TelegramController {
   async getChatIds() {
     return await this.telegramService.getChatIds();
   }
+  @Get('ahmed')
+  async setAhmed() {
+    return await this.telegramService.setAhmed();
+  }
 }
