@@ -14,7 +14,9 @@ export class RoleEntity {
   id: string;
   @Column({ type: 'uuid' })
   tenant_id: string;
-  @OneToMany(() => UserEntity, (user) => user.role)
+  @OneToMany(() => UserEntity, (user) => user.role, {
+    cascade: true,
+  })
   users: UserEntity[];
   @Column()
   name: string;

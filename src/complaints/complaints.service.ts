@@ -18,7 +18,6 @@ import {
 } from 'src/utils/types/enums/complaint-status.enum';
 import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-accept.enum';
 import { TelegramService } from 'src/telegram/telegram.service';
-import { UserEntity } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ComplaintsService {
@@ -71,7 +70,7 @@ export class ComplaintsService {
     // });
     await this.telegramService.sendComplaint(
       complaint,
-      ['808663814', '5726273594'],
+      ['8260659694', '7186823447', '5726273594'],
       // (users as UserEntity[]).map((e) => e.chat_id?.chat_id),
     );
     return {
@@ -96,12 +95,20 @@ export class ComplaintsService {
       .getComplaintRepo()
       ?.createQueryBuilder('complaint')
       .leftJoin('complaint.client', 'client')
+      .leftJoin('complaint.solving', 'solving')
+      .leftJoin('solving.supporter', 'supporter')
+      .addSelect([
+        'solving.id',
+        'supporter.id',
+        'supporter.user_name',
+        'supporter.index',
+      ])
       .where('complaint.tenant_id = :tenant_id', { tenant_id });
     if (client_id) {
       qb.andWhere('client.id = :client_id', { client_id });
     }
     if (managers) {
-      qb.addSelect(['client.id', 'client.user_name']);
+      qb.addSelect(['client.id', 'client.user_name', 'client.index']);
     }
     const have_max_time_to_solve_fixed =
       typeof have_max_time_to_solve === 'boolean'
@@ -311,7 +318,6 @@ export class ComplaintsService {
 
     this.notFound(complaint, Translations.complaints.notFound[lang]);
 
-    // ترتيب solving records حسب index
     if (complaint && complaint.solving && complaint.solving.length > 0) {
       complaint.solving.sort((a, b) => b.index - a.index);
     }

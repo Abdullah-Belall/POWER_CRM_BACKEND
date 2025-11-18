@@ -1,8 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ComplaintDBService } from 'src/complaints/DB_Service/complaints_db.service';
+import { DiscussionDBService } from 'src/discussions/DB_Service/discussions_db.service';
+import { PotentialCustomersDBService } from 'src/potential-customers/DB_Service/potential-customer-db.dervice';
 import { RolesDBService } from 'src/roles/DB_Service/roles_db.service';
+import { ServicesDBService } from 'src/services/DB_Service/services_db.service';
+import { SystemsDBService } from 'src/systems/DB_Service/systems_db.service';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { allowedSearchTables } from 'src/utils/base';
+import { DiscussionStatusEnum } from 'src/utils/types/enums/discussion-status.enum';
 
 @Injectable()
 export class CommonService {
@@ -10,6 +15,10 @@ export class CommonService {
     private readonly usersDBService: UsersDBService,
     private readonly rolesDBService: RolesDBService,
     private readonly complaintDBService: ComplaintDBService,
+    private readonly customersDBService: PotentialCustomersDBService,
+    private readonly discussionDBService: DiscussionDBService,
+    private readonly systemsDBService: SystemsDBService,
+    private readonly servicesDBService: ServicesDBService,
   ) {}
   async searchEngine(
     roles: string[],
@@ -21,6 +30,9 @@ export class CommonService {
     additinalQueries?: {
       role_id_for_users?: string;
       client_id?: string;
+      saler_id?: string;
+      customer_id?: string;
+      status?: DiscussionStatusEnum;
     },
   ) {
     if (!allowedSearchTables.includes(search_in)) {
@@ -43,6 +55,37 @@ export class CommonService {
       );
     } else if (search_in === 'complaints') {
       return await this.complaintDBService.searchEngine(
+        tenant_id,
+        search_with,
+        column,
+        created_sort,
+      );
+    } else if (search_in === 'potential_customers') {
+      return await this.customersDBService.searchEngine(
+        tenant_id,
+        search_with,
+        column,
+        created_sort,
+        additinalQueries?.saler_id,
+      );
+    } else if (search_in === 'discussions') {
+      return await this.discussionDBService.searchEngine(
+        tenant_id,
+        search_with,
+        column,
+        created_sort,
+        additinalQueries?.customer_id,
+        additinalQueries?.status,
+      );
+    } else if (search_in === 'systems') {
+      return await this.systemsDBService.searchEngine(
+        tenant_id,
+        search_with,
+        column,
+        created_sort,
+      );
+    } else if (search_in === 'services') {
+      return await this.servicesDBService.searchEngine(
         tenant_id,
         search_with,
         column,

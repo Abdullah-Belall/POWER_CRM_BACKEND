@@ -2,6 +2,8 @@ import { ComplaintsAssignerEntity } from 'src/complaints-assigner/entities/compl
 import { ComplaintsSolvingEntity } from 'src/complaints-solving/entities/complaints-solving.entity';
 import { ComplaintEntity } from 'src/complaints/entities/complaint.entity';
 import { DelayExcusesEntity } from 'src/delay-excuse/entities/delay-excuse.entity';
+import { DiscussionEntity } from 'src/discussions/entities/discussion.entity';
+import { PotentialCustomerEntity } from 'src/potential-customers/entities/potential-customer.entity';
 import { RoleEntity } from 'src/roles/entities/role.entity';
 import { TelegramEntity } from 'src/telegram/entities/telegram.entity';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
@@ -26,6 +28,11 @@ export class UserEntity {
   index: number;
   @ManyToOne(() => RoleEntity, (role) => role.users)
   role: RoleEntity;
+  //* FOR MANAGERS ONLY
+  @OneToMany(() => PotentialCustomerEntity, (comp) => comp.assigner, {
+    cascade: true,
+  })
+  potential_customeres_assignments: PotentialCustomerEntity[];
   //* FOR CLIENTS ONLY
   @OneToMany(() => ComplaintEntity, (comp) => comp.presenter, { cascade: true })
   presenter_complaints: ComplaintEntity[];
@@ -48,6 +55,15 @@ export class UserEntity {
     cascade: true,
   })
   solve_delay_excuses: DelayExcusesEntity[];
+  //* FOR SALES
+  @OneToMany(() => PotentialCustomerEntity, (cus) => cus.saler, {
+    cascade: true,
+  })
+  potential_customeres: PotentialCustomerEntity;
+  @OneToMany(() => DiscussionEntity, (dis) => dis.discussant, {
+    cascade: true,
+  })
+  discussions: DiscussionEntity[];
   @Column({ unique: true })
   user_name: string;
   @Column({ nullable: true })

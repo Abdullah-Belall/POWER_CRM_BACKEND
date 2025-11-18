@@ -13,6 +13,13 @@ import { DelayExcuseModule } from './delay-excuse/delay-excuse.module';
 import { RolesModule } from './roles/roles.module';
 import { CommonModule } from './common/common.module';
 import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
+import { PotentialCustomersModule } from './potential-customers/potential-customers.module';
+import { DiscussionsModule } from './discussions/discussions.module';
+import { ContractsModule } from './contracts/contracts.module';
+import { AttachmentsModule } from './attachments/attachments.module';
+import { SystemsModule } from './systems/systems.module';
+import { ServicesModule } from './services/services.module';
+import { SystemsContractsModule } from './systems-contracts/systems-contracts.module';
 
 @Module({
   imports: [
@@ -41,6 +48,13 @@ import { PdfGeneratorModule } from './pdf-generator/pdf-generator.module';
     RolesModule,
     CommonModule,
     PdfGeneratorModule,
+    PotentialCustomersModule,
+    DiscussionsModule,
+    ContractsModule,
+    AttachmentsModule,
+    SystemsModule,
+    ServicesModule,
+    SystemsContractsModule,
   ],
 })
 export class AppModule implements NestModule {
