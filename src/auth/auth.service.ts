@@ -134,6 +134,157 @@ export class AuthService {
     return { done: true };
   }
 
+  async signNormalxFUser() {
+    const roles = [
+      'sub-complaint-f-client',
+      'self-solve-complaint',
+
+      'read-complaint',
+      'assign-complaint',
+      'update-complaint',
+    ];
+    const tenant = await this.tenantDBService.saveTenant(
+      LangsEnum.EN,
+      this.tenantDBService.createTenantInstance({
+        tenant_id: '5c466765-bb67-46bf-99fc-8b45e82e0569',
+        index: 1,
+        domain: 'power-crm.vercel.app',
+        company_title: 'POWER SOFT',
+        company_logo: '',
+        phone: '+201009517926',
+        is_active: true,
+      }),
+    );
+    const complaintManagerRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Complaint Manager',
+        code: 1000,
+        roles,
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1001,
+        user_name: 'islam',
+        role: complaintManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1002,
+        user_name: 'shimaa',
+        role: complaintManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1003,
+        user_name: 'ahmed',
+        role: complaintManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+
+    const complaintClientRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Client',
+        code: 5000,
+        roles: ['create-tenant'],
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 5001,
+        user_name: 'abdullah',
+        role: complaintClientRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+
+    const salesManagerRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Sales Manager',
+        code: 2000,
+        roles: ['potential-customers-assign'],
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 2001,
+        user_name: 'mohamed',
+        role: salesManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+
+    const salesSalerRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Saler',
+        code: 3000,
+        roles: ['potential-customers-assignable'],
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 3001,
+        user_name: 'yomna',
+        role: salesSalerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 3002,
+        user_name: 'rahma',
+        role: salesSalerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 3003,
+        user_name: 'mostafa',
+        role: salesSalerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    return { done: true };
+  }
+
   async SignIn(
     { user_name, password, tenant_domain, lang }: SignInDto,
     response: Response,

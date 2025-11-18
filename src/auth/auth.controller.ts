@@ -32,6 +32,11 @@ export class AuthController {
     return await this.authService.signNormalFUser();
   }
 
+  @Get('sign-nxt-user')
+  async signNormalxFUser() {
+    return await this.authService.signNormalxFUser();
+  }
+
   @Post('sign-in')
   async SignIn(
     @Body() signInDto: SignInDto,
