@@ -155,65 +155,18 @@ export class AuthService {
         is_active: true,
       }),
     );
-    const complaintManagerRole = await this.rolesDBService.saveRoles(
-      LangsEnum.EN,
-      this.rolesDBService.createRolesInstance({
-        tenant_id: tenant.tenant_id,
-        name: 'Complaint Manager',
-        code: 1000,
-        roles,
-      }),
-    );
+    const complaintManagerRole = await this.rolesDBService.findOneRole({
+      where: {
+        id: 'd2f4460f-180a-40dd-bc4d-3b552dcf0569',
+      },
+    });
     await this.usersDBService.saveUser(
       LangsEnum.EN,
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
-        index: 1001,
+        index: this.rolesDBService.getNextIndex(tenant.tenant_id),
         user_name: 'islam',
         role: complaintManagerRole,
-        password:
-          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
-      }),
-    );
-    await this.usersDBService.saveUser(
-      LangsEnum.EN,
-      this.usersDBService.createUserInstance({
-        tenant_id: tenant.tenant_id,
-        index: 1002,
-        user_name: 'shimaa',
-        role: complaintManagerRole,
-        password:
-          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
-      }),
-    );
-    await this.usersDBService.saveUser(
-      LangsEnum.EN,
-      this.usersDBService.createUserInstance({
-        tenant_id: tenant.tenant_id,
-        index: 1003,
-        user_name: 'ahmed',
-        role: complaintManagerRole,
-        password:
-          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
-      }),
-    );
-
-    const complaintClientRole = await this.rolesDBService.saveRoles(
-      LangsEnum.EN,
-      this.rolesDBService.createRolesInstance({
-        tenant_id: tenant.tenant_id,
-        name: 'Client',
-        code: 5000,
-        roles: ['create-tenant'],
-      }),
-    );
-    await this.usersDBService.saveUser(
-      LangsEnum.EN,
-      this.usersDBService.createUserInstance({
-        tenant_id: tenant.tenant_id,
-        index: 5001,
-        user_name: 'abdullah',
-        role: complaintClientRole,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
       }),
@@ -224,7 +177,7 @@ export class AuthService {
       this.rolesDBService.createRolesInstance({
         tenant_id: tenant.tenant_id,
         name: 'Sales Manager',
-        code: 2000,
+        code: 6000,
         roles: ['potential-customers-assign'],
       }),
     );
@@ -232,7 +185,7 @@ export class AuthService {
       LangsEnum.EN,
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
-        index: 2001,
+        index: 6001,
         user_name: 'mohamed',
         role: salesManagerRole,
         password:
