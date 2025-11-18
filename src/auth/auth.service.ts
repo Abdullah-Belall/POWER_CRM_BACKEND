@@ -155,22 +155,6 @@ export class AuthService {
         is_active: true,
       }),
     );
-    const complaintManagerRole = await this.rolesDBService.findOneRole({
-      where: {
-        id: 'd2f4460f-180a-40dd-bc4d-3b552dcf0569',
-      },
-    });
-    await this.usersDBService.saveUser(
-      LangsEnum.EN,
-      this.usersDBService.createUserInstance({
-        tenant_id: tenant.tenant_id,
-        index: this.rolesDBService.getNextIndex(tenant.tenant_id),
-        user_name: 'islam',
-        role: complaintManagerRole,
-        password:
-          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
-      }),
-    );
 
     const salesManagerRole = await this.rolesDBService.saveRoles(
       LangsEnum.EN,
