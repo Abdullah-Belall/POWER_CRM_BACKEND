@@ -146,13 +146,55 @@ export class AuthService {
     const tenant = await this.tenantDBService.saveTenant(
       LangsEnum.EN,
       this.tenantDBService.createTenantInstance({
-        tenant_id: '5c466765-bb67-46bf-99fc-8b45e82e0569',
-        index: 1,
-        domain: 'power-crm.vercel.app',
-        company_title: 'POWER SOFT',
+        index: (await this.tenantDBService.getNextIndex()) + 1,
+        domain: 'power-soft-crm-v2.nabdtech.store',
+        company_title: 'POWER SOFT V2',
         company_logo: '',
         phone: '+201009517926',
         is_active: true,
+      }),
+    );
+
+    const complaintsManagerRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'Complaints Manager',
+        code: 1000,
+        roles: roles,
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1001,
+        user_name: 'Raniaa',
+        role: complaintsManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1002,
+        user_name: 'Shimaa',
+        role: complaintsManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1003,
+        user_name: 'Ahmed',
+        role: complaintsManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
       }),
     );
 
@@ -161,7 +203,7 @@ export class AuthService {
       this.rolesDBService.createRolesInstance({
         tenant_id: tenant.tenant_id,
         name: 'Sales Manager',
-        code: 6000,
+        code: 2000,
         roles: ['potential-customers-assign'],
       }),
     );
@@ -169,8 +211,8 @@ export class AuthService {
       LangsEnum.EN,
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
-        index: 6001,
-        user_name: 'mohamed',
+        index: 2001,
+        user_name: 'Mohamed',
         role: salesManagerRole,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
@@ -191,7 +233,7 @@ export class AuthService {
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
         index: 3001,
-        user_name: 'yomna',
+        user_name: 'Yomna',
         role: salesSalerRole,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
@@ -202,7 +244,7 @@ export class AuthService {
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
         index: 3002,
-        user_name: 'rahma',
+        user_name: 'Rahma',
         role: salesSalerRole,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
@@ -213,7 +255,7 @@ export class AuthService {
       this.usersDBService.createUserInstance({
         tenant_id: tenant.tenant_id,
         index: 3003,
-        user_name: 'mostafa',
+        user_name: 'Mostafa',
         role: salesSalerRole,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
@@ -263,13 +305,11 @@ export class AuthService {
       tenant_id: user.tenant_id,
     };
     const access_token = this.generateAccessToken(dataObj);
-    console.log('access_token => ', access_token);
     const refresh_token = this.generateRefreshToken(dataObj);
-    console.log('refresh_token => ', refresh_token);
     response.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
+      sameSite: 'strict',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       priority: 'high',
     });
@@ -308,7 +348,6 @@ export class AuthService {
       tenant_id: user.tenant_id,
     };
     const access_token = this.generateAccessToken(dataObj);
-    console.log('access_token => ', access_token);
     return {
       done: true,
       access_token,
