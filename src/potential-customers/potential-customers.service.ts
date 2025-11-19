@@ -13,20 +13,21 @@ export class PotentialCustomersService {
     private readonly usersDBService: UsersDBService,
   ) {}
   async addNew(
-    { tenant_id, lang }: UserTokenInterface,
+    { tenant_id, lang, id }: UserTokenInterface,
     createPotentialCustomerDto: CreatePotentialCustomerDto,
   ) {
-    // const assigner = await this.usersDBService.findOneUser({
-    //   where: {
-    //     id,
-    //     tenant_id,
-    //   },
-    // });
-    // if (!assigner) throw new NotFoundException();
+    const assigner = await this.usersDBService.findOneUser({
+      where: {
+        id,
+        tenant_id,
+      },
+    });
+    if (!assigner) throw new NotFoundException();
     await this.customersDBService.savePotentialCustomer(
       lang,
       this.customersDBService.createPotentialCustomerInstance({
         ...createPotentialCustomerDto,
+        assigner,
         tenant_id,
         index: await this.customersDBService.getNextIndex(tenant_id),
       }),
