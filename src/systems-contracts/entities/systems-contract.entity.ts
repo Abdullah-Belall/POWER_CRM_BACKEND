@@ -17,6 +17,8 @@ export class SystemsContractEntity {
   tenant_id: string;
   @ManyToOne(() => SystemEntity, (sys) => sys.contracts)
   system: SystemEntity;
+  @Column({ type: 'decimal', default: 0 })
+  system_price: number;
   @ManyToOne(() => ContractEntity, (sys) => sys.systems)
   contract: ContractEntity;
   @CreateDateColumn({ type: 'timestamptz' })

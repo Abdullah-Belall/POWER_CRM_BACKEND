@@ -30,8 +30,8 @@ export class ContractsService {
     { tenant_id, lang }: UserTokenInterface,
     { systems, services, customer_id, discount, vat, w_tax }: CreateContractDto,
   ) {
-    const systemsIds: string[] = JSON.parse(systems);
-    if (systemsIds?.length === 0) {
+    const systemsObj: { id: string; price: number }[] = JSON.parse(systems);
+    if (systemsObj?.length === 0) {
       throw new BadRequestException();
     }
     const servicesIds: string[] = JSON.parse(services);
@@ -57,17 +57,17 @@ export class ContractsService {
       total_price += Number(service.price);
     }
     const systemsFetched: SystemEntity[] = [];
-    for (const systemId of systemsIds) {
+    for (const oneSystem of systemsObj) {
       const system = await this.systemsDBService.findOneSystem({
         where: {
-          id: systemId,
+          id: oneSystem.id,
         },
       });
       if (!system) {
         throw new NotFoundException();
       }
-      systemsFetched.push(system);
-      total_price += Number(system.price);
+      systemsFetched.push({ ...system, price: Number(oneSystem.price) });
+      total_price += Number(oneSystem.price);
     }
     let var_total_price = Number(total_price);
     if (discount) {
@@ -113,6 +113,7 @@ export class ContractsService {
         this.systemsContractsDBService.createSystemsContractInstance({
           tenant_id,
           system,
+          system_price: system.price,
           contract,
         }),
       );
