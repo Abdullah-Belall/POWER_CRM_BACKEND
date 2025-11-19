@@ -263,11 +263,13 @@ export class AuthService {
       tenant_id: user.tenant_id,
     };
     const access_token = this.generateAccessToken(dataObj);
+    console.log('access_token => ', access_token);
     const refresh_token = this.generateRefreshToken(dataObj);
+    console.log('refresh_token => ', refresh_token);
     response.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       priority: 'high',
     });
@@ -306,6 +308,7 @@ export class AuthService {
       tenant_id: user.tenant_id,
     };
     const access_token = this.generateAccessToken(dataObj);
+    console.log('access_token => ', access_token);
     return {
       done: true,
       access_token,
