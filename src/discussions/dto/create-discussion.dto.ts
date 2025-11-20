@@ -1,11 +1,15 @@
 import {
+  IsDateString,
   IsEnum,
+  IsJSON,
   IsOptional,
   IsString,
+  IsUrl,
   IsUUID,
   MinLength,
 } from 'class-validator';
 import { DiscussionStatusEnum } from 'src/utils/types/enums/discussion-status.enum';
+import { MeetingEnum } from 'src/utils/types/enums/meeting-enum';
 
 export class CreateDiscussionDto {
   @IsUUID()
@@ -16,4 +20,16 @@ export class CreateDiscussionDto {
   @IsEnum(DiscussionStatusEnum)
   @IsOptional()
   status: DiscussionStatusEnum;
+  @IsEnum(MeetingEnum)
+  @IsOptional()
+  meeting: MeetingEnum;
+  @IsUrl()
+  @IsOptional()
+  meeting_url: string;
+  @IsJSON()
+  @IsOptional()
+  meeting_employees: string;
+  @IsDateString()
+  @IsOptional()
+  meeting_date: string;
 }

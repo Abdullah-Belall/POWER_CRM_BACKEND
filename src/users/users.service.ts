@@ -8,10 +8,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UsersDBService } from './DB_Service/users_db.service';
 import { RolesDBService } from 'src/roles/DB_Service/roles_db.service';
 import { UserTokenInterface } from './types/interfaces/user-token.interface';
-import { hash } from 'bcrypt';
 import * as XLSX from 'xlsx';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { UserEntity } from './entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { compare, hash } from 'bcrypt';
+
 @Injectable()
 export class UsersService {
   constructor(
@@ -58,6 +60,66 @@ export class UsersService {
     return {
       done: true,
       id: user.id,
+    };
+  }
+  async editUser(
+    { tenant_id, lang }: UserTokenInterface,
+    user_id: string,
+    updateUserDto: UpdateUserDto,
+  ) {
+    const user = await this.usersDBService.findOneUser({
+      where: {
+        id: user_id,
+        tenant_id,
+      },
+      relations: ['role'],
+      select: {
+        role: {
+          id: true,
+        },
+      },
+    });
+    if (!user) throw new NotFoundException();
+    if (updateUserDto.role_id && updateUserDto.role_id !== user.role?.id) {
+      const newRole = await this.roleDBService.findOneRole({
+        where: {
+          id: updateUserDto.role_id,
+          tenant_id,
+        },
+      });
+      if (!newRole) {
+        throw new BadRequestException();
+      }
+      user.role = newRole;
+      user.index =
+        (await this.usersDBService
+          .usersQB('user')
+          .leftJoin('user.role', 'role')
+          .where('role.id = :role_id', { role_id: newRole.id })
+          .andWhere('user.tenant_id = :tenant_id', { tenant_id })
+          .getCount()) +
+        Number(newRole.code) +
+        1;
+    }
+    if (updateUserDto.password) {
+      const isPasswordValid = await compare(
+        updateUserDto.password,
+        user.password,
+      );
+      if (!isPasswordValid) {
+        const hashedPass = await hash(updateUserDto.password, 12);
+        updateUserDto.password = hashedPass;
+      }
+    }
+    await this.usersDBService.saveUser(
+      lang,
+      this.usersDBService.createUserInstance({
+        ...user,
+        ...updateUserDto,
+      }),
+    );
+    return {
+      done: true,
     };
   }
   async findAllUsers(tenant_id: string, roles?: string[]) {

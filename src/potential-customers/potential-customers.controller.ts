@@ -14,6 +14,8 @@ import { User } from 'src/users/decorators/user.decorator';
 import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { ChangePotentialCustomerStatus } from './dto/change-customer-status';
+import { UpdateAttachmentDto } from 'src/attachments/dto/update-attachment.dto';
+import { UpdatePotentialCustomerDto } from './dto/update-potential-customer.dto';
 
 @Controller('potential-customers')
 export class PotentialCustomersController {
@@ -47,6 +49,19 @@ export class PotentialCustomersController {
       user,
       customer_id,
       saler_id,
+    );
+  }
+  @Patch(':id/edit')
+  @UseGuards(AuthGuard)
+  async editCustomerData(
+    @User() user: UserTokenInterface,
+    @Body() updatePotentialCustomerDto: UpdatePotentialCustomerDto,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return await this.potentialCustomersService.editCustomerData(
+      user,
+      id,
+      updatePotentialCustomerDto,
     );
   }
   @Patch(':id')

@@ -5,6 +5,7 @@ import { CreatePotentialCustomerDto } from './dto/create-potential-customer.dto'
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { PotentialCustomerStatus } from 'src/utils/types/enums/potential-customer.enum';
 import { Brackets } from 'typeorm';
+import { UpdatePotentialCustomerDto } from './dto/update-potential-customer.dto';
 
 @Injectable()
 export class PotentialCustomersService {
@@ -33,6 +34,28 @@ export class PotentialCustomersService {
       }),
     );
     return { done: true };
+  }
+  async editCustomerData(
+    { tenant_id, lang }: UserTokenInterface,
+    customer_id: string,
+    updateCustomerDto: UpdatePotentialCustomerDto,
+  ) {
+    const customer = await this.customersDBService.findOnePotentialCustomer({
+      where: {
+        id: customer_id,
+        tenant_id,
+      },
+    });
+    if (!customer) {
+      throw new NotFoundException();
+    }
+    await this.customersDBService.savePotentialCustomer(lang, {
+      ...customer,
+      ...updateCustomerDto,
+    });
+    return {
+      done: true,
+    };
   }
   async assignSaler(
     { tenant_id, lang }: UserTokenInterface,

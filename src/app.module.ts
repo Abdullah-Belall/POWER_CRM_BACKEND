@@ -20,6 +20,7 @@ import { AttachmentsModule } from './attachments/attachments.module';
 import { SystemsModule } from './systems/systems.module';
 import { ServicesModule } from './services/services.module';
 import { SystemsContractsModule } from './systems-contracts/systems-contracts.module';
+import { MeetingModule } from './meeting/meeting.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { SystemsContractsModule } from './systems-contracts/systems-contracts.mo
     SystemsModule,
     ServicesModule,
     SystemsContractsModule,
+    MeetingModule,
   ],
 })
 export class AppModule implements NestModule {

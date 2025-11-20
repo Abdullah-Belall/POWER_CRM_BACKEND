@@ -21,6 +21,7 @@ import { CreateUserGuard } from './guards/create.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { UpdateUserDto } from './dto/update-user.dto';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -50,6 +51,15 @@ export class UsersController {
     @Body() createUserDto: CreateUserDto,
   ) {
     return await this.usersService.createUser(user, createUserDto);
+  }
+  @Patch(':id/edit')
+  @UseGuards(CreateUserGuard)
+  async editUser(
+    @User() user: UserTokenInterface,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return await this.usersService.editUser(user, id, updateUserDto);
   }
   @Post('upload-users-excel')
   @UseInterceptors(
