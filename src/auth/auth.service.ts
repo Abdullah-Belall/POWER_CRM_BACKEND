@@ -264,6 +264,63 @@ export class AuthService {
     return { done: true };
   }
 
+  async generalManager() {
+    const tenant = await this.tenantDBService.findOneTenant({
+      where: {
+        domain: 'power-soft-crm-v2.nabdtech.store',
+      },
+    });
+    const generalManagerRole = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant?.tenant_id as string,
+        name: 'General Manager',
+        code: 4000,
+        roles: [
+          'create-tenant',
+          'read-tenant',
+          'update-tenant',
+
+          'create-user',
+          'read-user',
+          'update-user',
+          'read-system',
+          'create-system',
+          'update-system',
+          'read-service',
+          'create-service',
+          'update-service',
+          'create-role',
+          'read-role',
+          'update-role',
+
+          'sub-complaint-f-client',
+          'self-solve-complaint',
+
+          'read-complaint',
+          'assign-complaint',
+          'update-complaint',
+
+          'potential-customers-assign',
+          'suitable_for_meeting',
+        ],
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant?.tenant_id,
+        index: 3003,
+        user_name: 'Islam',
+        role: generalManagerRole,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    return {
+      done: true,
+    };
+  }
   async SignIn(
     { user_name, password, tenant_domain, lang }: SignInDto,
     response: Response,

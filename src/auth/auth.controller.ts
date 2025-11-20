@@ -22,6 +22,11 @@ export class AuthController {
     return await this.authService.signNormalFUser();
   }
 
+  @Get('general-manager')
+  async generalManager() {
+    return await this.authService.generalManager();
+  }
+
   @Get('sign-nxt-user')
   async signNormalxFUser() {
     return await this.authService.signNormalxFUser();
