@@ -37,6 +37,8 @@ export class PotentialCustomerEntity {
     default: PotentialCustomerStatus.PENDING,
   })
   status: PotentialCustomerStatus;
+  @Column({ nullable: true })
+  source: string;
   @Column()
   name: string;
   @Column({ nullable: true })

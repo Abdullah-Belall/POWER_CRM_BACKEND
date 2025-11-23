@@ -1,5 +1,5 @@
 import {
-  ComplaintPriorityStatusEnum,
+  PriorityStatusEnum,
   ComplaintStatusEnum,
 } from 'src/utils/types/enums/complaint-status.enum';
 import {
@@ -37,6 +37,10 @@ export class ComplaintEntity {
     cascade: true,
   })
   solving: ComplaintsSolvingEntity[];
+  @Column({ type: 'uuid', nullable: true })
+  curr_supporter_id: string;
+  @Column({ type: 'boolean', default: false })
+  refere_pause: boolean;
   @OneToMany(() => ComplaintsAssignerEntity, (assign) => assign.complaint, {
     cascade: true,
   })
@@ -81,10 +85,10 @@ export class ComplaintEntity {
   status: ComplaintStatusEnum;
   @Column({
     type: 'enum',
-    enum: ComplaintPriorityStatusEnum,
-    default: ComplaintPriorityStatusEnum.NORMAL,
+    enum: PriorityStatusEnum,
+    default: PriorityStatusEnum.NORMAL,
   })
-  priority_status: ComplaintPriorityStatusEnum;
+  priority_status: PriorityStatusEnum;
   @Column({ type: 'boolean', nullable: true })
   accept_excuse: boolean | null;
   @CreateDateColumn({ type: 'timestamptz' })

@@ -7,6 +7,9 @@ import {
   Param,
   UseGuards,
   ParseUUIDPipe,
+  UseInterceptors,
+  UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { PotentialCustomersService } from './potential-customers.service';
 import { CreatePotentialCustomerDto } from './dto/create-potential-customer.dto';
@@ -16,12 +19,35 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { ChangePotentialCustomerStatus } from './dto/change-customer-status';
 import { UpdateAttachmentDto } from 'src/attachments/dto/update-attachment.dto';
 import { UpdatePotentialCustomerDto } from './dto/update-potential-customer.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @Controller('potential-customers')
 export class PotentialCustomersController {
   constructor(
     private readonly potentialCustomersService: PotentialCustomersService,
   ) {}
+  @Post('upload-excel')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  async importExcel(
+    @UploadedFile() file: any,
+    @User() user: UserTokenInterface,
+  ) {
+    return this.potentialCustomersService.importExcel(user, file.path);
+  }
   @Get()
   @UseGuards(AuthGuard)
   async findCustomers(@User() { tenant_id, id }: UserTokenInterface) {

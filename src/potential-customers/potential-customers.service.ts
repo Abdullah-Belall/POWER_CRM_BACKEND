@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PotentialCustomersDBService } from './DB_Service/potential-customer-db.dervice';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { CreatePotentialCustomerDto } from './dto/create-potential-customer.dto';
@@ -6,6 +10,9 @@ import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { PotentialCustomerStatus } from 'src/utils/types/enums/potential-customer.enum';
 import { Brackets } from 'typeorm';
 import { UpdatePotentialCustomerDto } from './dto/update-potential-customer.dto';
+import * as XLSX from 'xlsx';
+import { LangsEnum } from 'src/utils/types/enums/langs.enum';
+import { PotentialCustomerEntity } from './entities/potential-customer.entity';
 
 @Injectable()
 export class PotentialCustomersService {
@@ -33,6 +40,40 @@ export class PotentialCustomersService {
         index: await this.customersDBService.getNextIndex(tenant_id),
       }),
     );
+    return { done: true };
+  }
+  async importExcel({ tenant_id, id, lang }: UserTokenInterface, path: string) {
+    console.log('1');
+    const workbook = XLSX.readFile(path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data: any[] = XLSX.utils.sheet_to_json(sheet);
+    const assigner = await this.usersDBService.findOneUser({
+      where: {
+        id,
+        tenant_id,
+      },
+    });
+    if (!assigner) {
+      throw new NotFoundException();
+    }
+    let customers: PotentialCustomerEntity[] = [];
+    for (const row of data) {
+      const user = this.customersDBService.createPotentialCustomerInstance({
+        tenant_id,
+        assigner,
+        index:
+          Number(await this.customersDBService.getNextIndex(tenant_id)) + 1,
+        name: row['Customer_Name'] ? row['Customer_Name']?.trim() : 'No Name',
+        source: row['source'] ? row['source']?.trim() : undefined,
+        note: row['Feedback'] ? row['Feedback']?.trim() : undefined,
+        company: row['Company_Name'] ? row['Company_Name']?.trim() : undefined,
+        phone: row['phone'] ? `+20` + row['phone']?.trim() : undefined,
+      });
+      customers.push(user);
+    }
+    console.log('4');
+    await this.customersDBService.savePotentialCustomer(lang, customers as any);
+    console.log('done ');
     return { done: true };
   }
   async editCustomerData(

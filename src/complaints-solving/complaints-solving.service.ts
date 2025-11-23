@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -30,6 +31,11 @@ export class ComplaintsSolvingService {
     });
     if (!complaint)
       throw new NotFoundException(Translations.complaints.notFound[lang]);
+    if (complaint.curr_supporter_id) {
+      throw new ConflictException(
+        'There is already a supporter working on this complaint',
+      );
+    }
     if (
       complaint.status !== ComplaintStatusEnum.PENDING &&
       complaint.status !== ComplaintStatusEnum.SUSPENDED
@@ -64,6 +70,7 @@ export class ComplaintsSolvingService {
       ...complaint,
       start_solve_at: new Date(),
       status: ComplaintStatusEnum.IN_PROGRESS,
+      curr_supporter_id: manager.id,
     });
     return {
       done: true,
@@ -80,21 +87,13 @@ export class ComplaintsSolvingService {
   ) {
     const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
-      .leftJoinAndSelect('complaint.solving', 'solving')
-      .leftJoinAndSelect('solving.supporter', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
-      .orderBy('solving.created_at', 'DESC')
       .getOne();
     this.notFound(complaint, Translations.complaints.notFound[lang]);
     if (complaint?.status !== ComplaintStatusEnum.IN_PROGRESS)
       throw new BadRequestException();
-    if (complaint?.solving[0]?.supporter?.id !== id)
-      throw new BadRequestException();
-    if (
-      complaint?.solving[0].accept_status !== SupporterReferAcceptEnum.ACCEPTED
-    )
-      throw new BadRequestException();
+    if (complaint?.curr_supporter_id !== id) throw new BadRequestException();
     const newSupporter = await this.userDBService.findOneUser({
       where: {
         id: refer_to_id,
@@ -112,6 +111,10 @@ export class ComplaintsSolvingService {
         complaint,
       }),
     );
+    await this.complaintDBService.saveComplaint(lang, {
+      ...complaint,
+      refere_pause: true,
+    });
     return {
       done: true,
     };
@@ -137,10 +140,19 @@ export class ComplaintsSolvingService {
     solving!.accept_status = accept_status;
     solving!.choice_taked_at = new Date();
     await this.solvingDBService.saveComplaintsSolving(lang, solving);
+    if (accept_status === SupporterReferAcceptEnum.ACCEPTED) {
+      await this.complaintDBService.saveComplaint(lang, {
+        ...solving?.complaint,
+        curr_supporter_id: id,
+        refere_pause: false,
+      } as ComplaintEntity);
+    }
     if (accept_status === SupporterReferAcceptEnum.DECLINED) {
       await this.complaintDBService.saveComplaint(lang, {
         ...solving?.complaint,
         status: ComplaintStatusEnum.SUSPENDED,
+        curr_supporter_id: '',
+        refere_pause: false,
       } as ComplaintEntity);
     }
     return {

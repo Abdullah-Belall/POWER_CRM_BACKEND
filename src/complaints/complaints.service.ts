@@ -10,10 +10,9 @@ import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { Translations } from 'src/utils/base';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { ComplaintsFilterInterface } from 'src/users/types/interfaces/complaints-filter.interface';
-import { Brackets } from 'typeorm';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import {
-  ComplaintPriorityStatusEnum,
+  PriorityStatusEnum,
   ComplaintStatusEnum,
 } from 'src/utils/types/enums/complaint-status.enum';
 import { SupporterReferAcceptEnum } from 'src/utils/types/enums/supporter-refer-accept.enum';
@@ -36,9 +35,14 @@ export class ComplaintsService {
       where: {
         id: presenter_id,
       },
+      relations: ['role'],
     });
     if (!presenter)
       throw new NotFoundException(Translations.user.notFound[lang]);
+    if (presenter?.role?.roles?.includes('create-complaint-forbidden'))
+      throw new ForbiddenException(
+        'يرجي العلم انه قد تم حظركم من تسجيل شكاوي في الوقت الحالي. يرجي التواصل مع ادارة الدعم الفني علي الرقم 201033008808',
+      );
     const client = await this.usersDBService.findOneUser({
       where: {
         id: createComplaintDto.client_id,
@@ -165,27 +169,16 @@ export class ComplaintsService {
       .getComplaintRepo()
       .createQueryBuilder('complaint')
       .leftJoinAndSelect('complaint.client', 'client')
-      .leftJoinAndSelect('complaint.solving', 'solving')
-      .leftJoinAndSelect('solving.supporter', 'supporter')
       .where('complaint.tenant_id = :tenant_id', { tenant_id })
       .andWhere('complaint.status = :status', {
         status: ComplaintStatusEnum.IN_PROGRESS,
       })
-      .andWhere((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('MAX(s2.index)')
-          .from('complaint_solving', 's2')
-          .where('s2.complaintId = complaint.id')
-          .getQuery();
-        return `
-          solving.index = ${subQuery}
-          AND supporter.id = :supporterId
-          AND solving.accept_status = :accepted
-        `;
+      .andWhere('complaint.curr_supporter_id = :supporter_id', {
+        supporter_id: supporterId,
       })
-      .setParameter('supporterId', supporterId)
-      .setParameter('accepted', SupporterReferAcceptEnum.ACCEPTED)
+      .andWhere('complaint.refere_pause = :val', {
+        val: false,
+      })
       .orderBy('complaint.created_at', 'DESC');
 
     const [complaints, total] = await qb.getManyAndCount();
@@ -201,13 +194,22 @@ export class ComplaintsService {
       .leftJoinAndSelect('complaint.client', 'client')
       .leftJoinAndSelect('complaint.solving', 'solving')
       .leftJoinAndSelect('solving.supporter', 'supporter')
-      .where('supporter.id = :supporterId', { supporterId })
-      .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
       .andWhere('complaint.status = :status', {
         status: ComplaintStatusEnum.IN_PROGRESS,
       })
-      .andWhere('solving.accept_status = :accept_status', {
-        accept_status: SupporterReferAcceptEnum.PENDING,
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('DISTINCT solving2.complaintId')
+          .from('complaint_solving', 'solving2')
+          .leftJoin('solving2.supporter', 'supporter2')
+          .where('supporter2.id = :supporterId', { supporterId })
+          .andWhere('solving2.accept_status = :accept_status', {
+            accept_status: SupporterReferAcceptEnum.PENDING,
+          })
+          .getQuery();
+        return `complaint.id IN ${subQuery}`;
       })
       .orderBy('complaint.created_at', 'DESC');
 
@@ -219,11 +221,7 @@ export class ComplaintsService {
       }
     });
 
-    const filteredComplaints = complaints.filter(
-      (complaint) => complaint.solving[0]?.supporter?.id === supporterId,
-    );
-
-    return { complaints: filteredComplaints, total };
+    return { complaints, total };
   }
   async findOneComplaint(
     tenant_id: string,
@@ -280,7 +278,7 @@ export class ComplaintsService {
   async changeComplaintPriorityStatus(
     { tenant_id, lang }: UserTokenInterface,
     id: string,
-    priority_status: ComplaintPriorityStatusEnum,
+    priority_status: PriorityStatusEnum,
   ) {
     const complaint = await this.complaintDBService.findOneComplaint({
       where: {
@@ -311,25 +309,15 @@ export class ComplaintsService {
     const complaint = await this.complaintDBService
       .ComplaintQB('complaint')
       .leftJoinAndSelect('complaint.solving', 'solving')
-      .leftJoinAndSelect('solving.supporter', 'supporter')
       .where('complaint.id = :id', { id: complaint_id })
       .andWhere('complaint.tenant_id = :tenant_id', { tenant_id })
+      .andWhere('complaint.curr_supporter_id = :supporter_id', {
+        supporter_id: id,
+      })
       .getOne();
-
-    this.notFound(complaint, Translations.complaints.notFound[lang]);
-
-    if (complaint && complaint.solving && complaint.solving.length > 0) {
-      complaint.solving.sort((a, b) => b.index - a.index);
+    if (!complaint) {
+      throw new NotFoundException(Translations.complaints.notFound[lang]);
     }
-
-    if (complaint?.solving[0]?.supporter?.id !== id)
-      throw new BadRequestException('fixid 3dn');
-    if (
-      complaint?.solving[0].accept_status !== SupporterReferAcceptEnum.ACCEPTED
-    )
-      throw new BadRequestException('2');
-    if (complaint?.status !== ComplaintStatusEnum.IN_PROGRESS)
-      throw new BadRequestException('3');
     complaint.end_solve_at = new Date();
     complaint.status = status;
     await this.complaintDBService.saveComplaint(lang, complaint);
@@ -412,7 +400,7 @@ export class ComplaintsService {
     let totalSupporterDoneComplaints: number = 0;
     let totalSupporterOpenedComplaints: number = 0;
     let totalSupporterHighPriorityComplaints: number = 0;
-    if (roles.includes('assignable')) {
+    if (roles.includes('complaint-assignable')) {
       totalSupporterComplaints = await this.complaintDBService
         .ComplaintQB('complaint')
         .leftJoin('complaint.solving', 'solving')
@@ -467,7 +455,7 @@ export class ComplaintsService {
         .leftJoin('solving.supporter', 'supporter')
         .where('complaint.tenant_id = :tenant_id', { tenant_id })
         .andWhere('complaint.priority_status = :priority_status', {
-          priority_status: ComplaintPriorityStatusEnum.HIGH,
+          priority_status: PriorityStatusEnum.HIGH,
         })
         .andWhere('complaint.status IN (:...statuses)', {
           statuses: [ComplaintStatusEnum.IN_PROGRESS],
@@ -519,7 +507,7 @@ export class ComplaintsService {
         .ComplaintQB('complaint')
         .where('complaint.tenant_id = :tenant_id', { tenant_id })
         .andWhere('complaint.priority_status = :priority_status', {
-          priority_status: ComplaintPriorityStatusEnum.HIGH,
+          priority_status: PriorityStatusEnum.HIGH,
         })
         .getCount();
     }

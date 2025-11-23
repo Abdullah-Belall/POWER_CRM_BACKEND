@@ -27,6 +27,15 @@ export class RolesController {
   ) {
     return await this.rolesService.createRole(user, createRoleDto);
   }
+  @Patch(':user_id/add-attribute')
+  @UseGuards(CreateRoleGuard)
+  async toggleRoleAttribute(
+    @User() user: UserTokenInterface,
+    @Param('user_id', new ParseUUIDPipe()) user_id: string,
+    @Body() { roles }: ChangeRoleAttribute,
+  ) {
+    return await this.rolesService.toggleRoleAttribute(user, user_id, roles);
+  }
   @Patch(':id')
   @UseGuards(CreateRoleGuard)
   async changeRoleAttributes(

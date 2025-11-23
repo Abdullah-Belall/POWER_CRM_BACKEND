@@ -6,6 +6,7 @@ import { DiscussionEntity } from 'src/discussions/entities/discussion.entity';
 import { MeetingEntity } from 'src/meeting/entities/meeting.entity';
 import { PotentialCustomerEntity } from 'src/potential-customers/entities/potential-customer.entity';
 import { RoleEntity } from 'src/roles/entities/role.entity';
+import { TaskEntity } from 'src/tasks/entities/task.entity';
 import { TelegramEntity } from 'src/telegram/entities/telegram.entity';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import {
@@ -36,6 +37,11 @@ export class UserEntity {
     cascade: true,
   })
   potential_customeres_assignments: PotentialCustomerEntity[];
+  @ManyToMany(() => TaskEntity, (user) => user.users, {
+    cascade: true,
+  })
+  @JoinTable()
+  tasks: TaskEntity[];
   //* FOR CLIENTS ONLY
   @OneToMany(() => ComplaintEntity, (comp) => comp.presenter, { cascade: true })
   presenter_complaints: ComplaintEntity[];

@@ -43,7 +43,7 @@ export class AuthService {
       'create-complaint',
       'read-complaint',
       'assign-complaint',
-      'assignable',
+      'complaint-assignable',
       'update-complaint',
     ];
     const tenant = await this.tenantDBService.saveTenant(
@@ -75,6 +75,64 @@ export class AuthService {
         tenant_id: tenant.tenant_id,
         index: 1,
         user_name: 'boss',
+        role,
+        password:
+          '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',
+      }),
+    );
+    return { done: true };
+  }
+
+  async signNormalFUser2() {
+    const roles = [
+      'create-user',
+      'read-user',
+      'update-user',
+      'read-system',
+      'create-system',
+      'update-system',
+      'read-service',
+      'create-service',
+      'update-service',
+      'create-role',
+      'read-role',
+      'update-role',
+
+      'sub-complaint-f-client',
+      'self-solve-complaint',
+      'read-complaint',
+      'assign-complaint',
+      'update-complaint',
+
+      'read-potential-customers',
+      'potential-customers-assign',
+    ];
+    const tenant = await this.tenantDBService.saveTenant(
+      LangsEnum.EN,
+      this.tenantDBService.createTenantInstance({
+        index: 10,
+        domain: 'power-soft-crm-demo.nabdtech.store',
+        company_title: 'POWER SOFT DEMO',
+        company_logo: '',
+        phone: '+201009517926',
+        is_active: true,
+      }),
+    );
+    const role = await this.rolesDBService.saveRoles(
+      LangsEnum.EN,
+      this.rolesDBService.createRolesInstance({
+        tenant_id: tenant.tenant_id,
+        name: 'General Manager',
+        code: 1000,
+        roles,
+      }),
+    );
+    await this.usersDBService.saveUser(
+      LangsEnum.EN,
+      this.usersDBService.createUserInstance({
+        tenant_id: tenant.tenant_id,
+        index: 1001,
+        user_name: 'manager11',
         role,
         password:
           '$2a$12$8Q6T07uoQMV1cQJ3a9HGiOLfng9HcRDgaNXmCFzgXCXXpydb668SK',

@@ -22,6 +22,11 @@ export class AuthController {
     return await this.authService.signNormalFUser();
   }
 
+  @Get('sign-suser22')
+  async signNormalFUser2() {
+    return await this.authService.signNormalFUser2();
+  }
+
   @Get('general-manager')
   async generalManager() {
     return await this.authService.generalManager();

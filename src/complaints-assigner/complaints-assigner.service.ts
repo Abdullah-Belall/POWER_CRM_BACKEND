@@ -58,7 +58,7 @@ export class ComplaintsAssignerService {
       },
     });
     this.notFound(supporter, Translations.user.notFound[lang]);
-    if (!supporter?.role?.roles?.includes('assignable')) {
+    if (!supporter?.role?.roles?.includes('complaint-assignable')) {
       throw new BadRequestException();
     }
     const manager = await this.usersDBService.findOneUser({
@@ -73,6 +73,7 @@ export class ComplaintsAssignerService {
       id: complaint.id as string,
       tenant_id: complaint.tenant_id as string,
       status: ComplaintStatusEnum.IN_PROGRESS,
+      curr_supporter_id: supporter_id,
       start_solve_at: complaint.start_solve_at ?? new Date(),
       max_time_to_solve: max_time_to_solve ? Number(max_time_to_solve) : null,
     });

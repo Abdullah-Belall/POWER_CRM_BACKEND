@@ -6,6 +6,7 @@ import {
 import { CreateRoleDto } from './dto/create-role.dto';
 import { RolesDBService } from './DB_Service/roles_db.service';
 import { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
+import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 
 @Injectable()
 export class RolesService {
@@ -86,6 +87,32 @@ export class RolesService {
     return {
       roles,
       total,
+    };
+  }
+  async toggleRoleAttribute(
+    { tenant_id, lang }: UserTokenInterface,
+    user_id: string,
+    role_attribute: string,
+  ) {
+    const role = await this.roleDBService.findOneRole({
+      where: {
+        users: {
+          id: user_id,
+        },
+        tenant_id,
+      },
+    });
+    if (!role) {
+      throw new BadRequestException();
+    }
+    if (role?.roles.includes(role_attribute)) {
+      role.roles = role.roles?.filter((role) => role !== role_attribute);
+    } else {
+      role.roles = [...(role.roles || []), role_attribute];
+    }
+    await this.roleDBService.saveRoles(lang, role);
+    return {
+      done: true,
     };
   }
 }

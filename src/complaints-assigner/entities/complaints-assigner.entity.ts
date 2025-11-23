@@ -5,7 +5,6 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
-  JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
 
