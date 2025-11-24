@@ -17,6 +17,7 @@ export class CreateTenantDto {
   @IsString()
   company_title: string;
   @IsString()
+  @IsOptional()
   company_logo: string;
   @IsPhoneNumber()
   @IsOptional()

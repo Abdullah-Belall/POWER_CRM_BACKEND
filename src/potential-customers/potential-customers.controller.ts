@@ -48,6 +48,11 @@ export class PotentialCustomersController {
   ) {
     return this.potentialCustomersService.importExcel(user, file.path);
   }
+  @Get('all')
+  @UseGuards(AuthGuard)
+  async findAllCustomers(@User() { tenant_id }: UserTokenInterface) {
+    return await this.potentialCustomersService.findCustomers(tenant_id);
+  }
   @Get()
   @UseGuards(AuthGuard)
   async findCustomers(@User() { tenant_id, id }: UserTokenInterface) {

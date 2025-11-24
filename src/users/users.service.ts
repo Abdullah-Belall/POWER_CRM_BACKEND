@@ -126,8 +126,17 @@ export class UsersService {
     const qb = this.usersDBService
       .usersQB('user')
       .where('user.tenant_id = :tenant_id', { tenant_id })
+      .leftJoin('user.chat_id', 'chat_id')
       .leftJoin('user.role', 'role')
-      .addSelect(['role.id', 'role.name', 'role.code', 'role.roles'])
+      .addSelect([
+        'role.id',
+        'role.name',
+        'role.code',
+        'role.roles',
+        'chat_id.id',
+        'chat_id.chat_id',
+        'chat_id.active',
+      ])
       .loadRelationCountAndMap('user.complaints_count', 'user.complaints')
       .loadRelationCountAndMap('user.solving_count', 'user.complaints_solving');
     if (roles && roles.length > 0) {

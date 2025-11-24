@@ -18,7 +18,7 @@ export class TenantsEntity {
   domain: string;
   @Column()
   company_title: string;
-  @Column()
+  @Column({ default: '' })
   company_logo: string;
   @OneToMany(() => TelegramEntity, (tele) => tele.tenant, { cascade: true })
   chat_ids: TelegramEntity[];

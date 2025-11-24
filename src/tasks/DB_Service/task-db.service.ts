@@ -10,6 +10,7 @@ import {
 import { TaskEntity } from '../entities/task.entity';
 import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { Translations } from 'src/utils/base';
+import { TaskStatusEnum } from 'src/utils/types/enums/task-status.enum';
 
 @Injectable()
 export class TasksDBService {
@@ -99,5 +100,20 @@ export class TasksDBService {
       data,
       total,
     };
+  }
+  async findTasksDueSoon(hoursWindow = 2): Promise<TaskEntity[]> {
+    const now = new Date();
+    const deadline = new Date(now.getTime() + hoursWindow * 60 * 60 * 1000);
+    return this.tasksRepo
+      .createQueryBuilder('task')
+      .leftJoinAndSelect('task.users', 'users')
+      .leftJoinAndSelect('users.chat_id', 'chat_id')
+      .where('task.status = :status', { status: TaskStatusEnum.PENDING })
+      .andWhere('task.task_date BETWEEN :now AND :deadline', {
+        now,
+        deadline,
+      })
+      .orderBy('task.task_date', 'ASC')
+      .getMany();
   }
 }

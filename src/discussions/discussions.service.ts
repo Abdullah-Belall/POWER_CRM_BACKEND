@@ -6,7 +6,9 @@ import { PotentialCustomersDBService } from 'src/potential-customers/DB_Service/
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { PotentialCustomerStatus } from 'src/utils/types/enums/potential-customer.enum';
 import { UserEntity } from 'src/users/entities/user.entity';
-import { MeetingDBService } from 'src/meeting/DB_Service/meeting-db.service';
+import { TasksService } from 'src/tasks/tasks.service';
+import { PriorityStatusEnum } from 'src/utils/types/enums/complaint-status.enum';
+// import { MeetingDBService } from 'src/meeting/DB_Service/meeting-db.service';
 
 @Injectable()
 export class DiscussionsService {
@@ -14,10 +16,10 @@ export class DiscussionsService {
     private readonly discussionDBService: DiscussionDBService,
     private readonly customersDBService: PotentialCustomersDBService,
     private readonly usersDBService: UsersDBService,
-    private readonly meetingDBService: MeetingDBService,
+    private readonly tasksService: TasksService,
   ) {}
   async newDiscussion(
-    { tenant_id, id, lang }: UserTokenInterface,
+    user: UserTokenInterface,
     {
       customer_id,
       status,
@@ -28,6 +30,7 @@ export class DiscussionsService {
       meeting_date,
     }: CreateDiscussionDto,
   ) {
+    const { tenant_id, id, lang } = user;
     const customer = await this.customersDBService.findOnePotentialCustomer({
       where: {
         id: customer_id,
@@ -42,7 +45,7 @@ export class DiscussionsService {
       },
     });
     if (!discussant) throw new NotFoundException();
-    const savedDiscussion = await this.discussionDBService.saveDiscussion(
+    await this.discussionDBService.saveDiscussion(
       lang,
       this.discussionDBService.createDiscussionInstance({
         customer,
@@ -57,40 +60,14 @@ export class DiscussionsService {
       }),
     );
     if (meeting) {
-      const users: UserEntity[] = [];
-      users.push(
-        (await this.usersDBService.findOneUser({
-          where: {
-            id,
-            tenant_id,
-          },
-        })) as UserEntity,
-      );
-      const employeesIds: string[] = JSON.parse(meeting_employees);
-      for (const id of employeesIds) {
-        const fetchUser = await this.usersDBService.findOneUser({
-          where: {
-            id,
-            tenant_id,
-          },
-        });
-        if (fetchUser) users.push(fetchUser as UserEntity);
-      }
-      await this.meetingDBService.saveMeeting(
-        lang,
-        this.meetingDBService.createMeetingInstance({
-          tenant_id,
-          index: await this.meetingDBService.getNextIndex(
-            tenant_id,
-            savedDiscussion.id,
-          ),
-          employees: users,
-          discussion: savedDiscussion,
-          meeting,
-          meeting_url,
-          meeting_date,
-        }),
-      );
+      await this.tasksService.createTask(user, {
+        title: `${meeting} with ${customer.name}`,
+        users: meeting_employees,
+        location: meeting_url,
+        task_date: meeting_date,
+        details: `This task was automatically created when a quote was created ${customer.name}.`,
+        priority_status: PriorityStatusEnum.NORMAL,
+      });
     }
     if (customer.status === PotentialCustomerStatus.PENDING)
       await this.customersDBService.savePotentialCustomer(lang, {

@@ -143,8 +143,8 @@ export class PotentialCustomersService {
       done: true,
     };
   }
-  async findCustomers(tenant_id: string, user_id: string) {
-    const [customers, total] = await this.customersDBService
+  async findCustomers(tenant_id: string, user_id?: string) {
+    const qb = this.customersDBService
       .potentialCustomerQB('cust')
       .leftJoin('cust.assigner', 'assigner')
       .leftJoin('cust.saler', 'saler')
@@ -155,14 +155,19 @@ export class PotentialCustomersService {
         'saler.id',
         'saler.user_name',
       ])
-      .where('cust.tenant_id = :tenant_id', { tenant_id })
-      .andWhere(
+      .where('cust.tenant_id = :tenant_id', { tenant_id });
+
+    if (user_id) {
+      qb.andWhere(
         new Brackets((subqb) =>
           subqb
             .where('assigner.id = :id', { id: user_id })
             .orWhere('saler.id = :id', { id: user_id }),
         ),
-      )
+      );
+    }
+
+    const [customers, total] = await qb
       .orderBy('cust.created_at', 'DESC')
       .getManyAndCount();
     return {

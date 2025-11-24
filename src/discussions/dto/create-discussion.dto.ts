@@ -23,8 +23,8 @@ export class CreateDiscussionDto {
   @IsEnum(MeetingEnum)
   @IsOptional()
   meeting: MeetingEnum;
-  @IsUrl()
   @IsOptional()
+  @IsString()
   meeting_url: string;
   @IsJSON()
   @IsOptional()

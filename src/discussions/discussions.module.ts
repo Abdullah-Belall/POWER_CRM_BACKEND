@@ -6,14 +6,14 @@ import { DiscussionEntity } from './entities/discussion.entity';
 import { DiscussionDBService } from './DB_Service/discussions_db.service';
 import { PotentialCustomersModule } from 'src/potential-customers/potential-customers.module';
 import { UsersModule } from 'src/users/users.module';
-import { MeetingModule } from 'src/meeting/meeting.module';
+import { TasksModule } from 'src/tasks/tasks.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([DiscussionEntity]),
     PotentialCustomersModule,
     UsersModule,
-    MeetingModule,
+    TasksModule,
   ],
   controllers: [DiscussionsController],
   providers: [DiscussionsService, DiscussionDBService],

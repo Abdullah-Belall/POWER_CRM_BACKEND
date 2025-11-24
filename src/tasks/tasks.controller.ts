@@ -38,4 +38,8 @@ export class TasksController {
   async readTasks(@User() user: UserTokenInterface) {
     return await this.tasksService.readTasks(user);
   }
+  @Get('test')
+  async getTasksDueInTwoHours() {
+    return await this.tasksService.getTasksDueInTwoHours();
+  }
 }

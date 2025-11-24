@@ -3,7 +3,6 @@ import { ComplaintsSolvingEntity } from 'src/complaints-solving/entities/complai
 import { ComplaintEntity } from 'src/complaints/entities/complaint.entity';
 import { DelayExcusesEntity } from 'src/delay-excuse/entities/delay-excuse.entity';
 import { DiscussionEntity } from 'src/discussions/entities/discussion.entity';
-import { MeetingEntity } from 'src/meeting/entities/meeting.entity';
 import { PotentialCustomerEntity } from 'src/potential-customers/entities/potential-customer.entity';
 import { RoleEntity } from 'src/roles/entities/role.entity';
 import { TaskEntity } from 'src/tasks/entities/task.entity';
@@ -73,11 +72,6 @@ export class UserEntity {
     cascade: true,
   })
   discussions: DiscussionEntity[];
-  @ManyToMany(() => MeetingEntity, (meet) => meet.employees, {
-    cascade: true,
-  })
-  @JoinTable()
-  meetings: MeetingEntity[];
   @Column({ unique: true })
   user_name: string;
   @Column({ nullable: true })

@@ -103,6 +103,8 @@ export class ComplaintsService {
       .leftJoin('solving.supporter', 'supporter')
       .addSelect([
         'solving.id',
+        'solving.index',
+        'solving.created_at',
         'supporter.id',
         'supporter.user_name',
         'supporter.index',
@@ -157,7 +159,10 @@ export class ComplaintsService {
         created_to: new Date(created_to),
       });
     }
-    qb.orderBy('complaint.created_at', ordered_by);
+    qb.orderBy('complaint.created_at', ordered_by).addOrderBy(
+      'solving.created_at',
+      'DESC',
+    );
     const [complaints, total] = await qb.getManyAndCount();
     return {
       complaints,

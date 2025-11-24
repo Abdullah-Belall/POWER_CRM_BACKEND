@@ -142,6 +142,7 @@ export class ContractsService {
         id: contract_id,
         tenant_id,
       },
+      relations: ['customer'],
     });
     if (!contract) throw new NotFoundException();
     await this.contractStatusDBService.saveContractStatus(
@@ -158,6 +159,13 @@ export class ContractsService {
     );
     contract.curr_status = status;
     await this.contractDBService.saveContract(lang, contract);
+    if (contract.customer && status === ContractStatusEnum.SIGNED) {
+      contract.customer.status = PotentialCustomerStatus.CONTRACTED;
+      await this.customersDBService.savePotentialCustomer(
+        lang,
+        contract.customer,
+      );
+    }
     return {
       done: true,
     };

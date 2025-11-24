@@ -20,11 +20,12 @@ import { AttachmentsModule } from './attachments/attachments.module';
 import { SystemsModule } from './systems/systems.module';
 import { ServicesModule } from './services/services.module';
 import { SystemsContractsModule } from './systems-contracts/systems-contracts.module';
-import { MeetingModule } from './meeting/meeting.module';
 import { TasksModule } from './tasks/tasks.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -57,7 +58,6 @@ import { TasksModule } from './tasks/tasks.module';
     SystemsModule,
     ServicesModule,
     SystemsContractsModule,
-    MeetingModule,
     TasksModule,
   ],
 })

@@ -5,9 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TenantsEntity } from './entities/tenant.entity';
 import { TenantDBService } from './DB_Services/tenant_db.service';
 import { UsersModule } from 'src/users/users.module';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TenantsEntity]), UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([TenantsEntity]),
+    UsersModule,
+    RolesModule,
+  ],
   controllers: [TenantsController],
   providers: [TenantsService, TenantDBService],
   exports: [TenantDBService],
