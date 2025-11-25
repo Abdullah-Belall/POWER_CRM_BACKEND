@@ -11,32 +11,6 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
-
-  @Get('sign-fuser')
-  async signFirstUser() {
-    return await this.authService.signFirstUser();
-  }
-
-  @Get('sign-suser')
-  async signNormalFUser() {
-    return await this.authService.signNormalFUser();
-  }
-
-  @Get('sign-suser22')
-  async signNormalFUser2() {
-    return await this.authService.signNormalFUser2();
-  }
-
-  @Get('general-manager')
-  async generalManager() {
-    return await this.authService.generalManager();
-  }
-
-  @Get('sign-nxt-user')
-  async signNormalxFUser() {
-    return await this.authService.signNormalxFUser();
-  }
-
   @Post('sign-in')
   async SignIn(
     @Body() signInDto: SignInDto,
