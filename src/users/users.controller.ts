@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UseInterceptors,
   ParseUUIDPipe,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
 import { UpdateUserDto } from './dto/update-user.dto';
+import type { Response } from 'express';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -30,10 +32,13 @@ export class UsersController {
   }
   @Get('profile')
   @UseGuards(AuthGuard)
-  async profile(@User() { id, tenant_id }: UserTokenInterface) {
-    return await this.usersService.profile(id, tenant_id);
+  async profile(
+    @User() { id, tenant_id }: UserTokenInterface,
+    @Res({ passthrough: true }) response: Response,
+    @Query('domain') domain: string,
+  ) {
+    return await this.usersService.profile(id, tenant_id, domain, response);
   }
-
   @Get()
   @UseGuards(AuthGuard)
   async findUsers(

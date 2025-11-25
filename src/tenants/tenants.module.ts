@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 import { TenantsController } from './tenants.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,7 +10,7 @@ import { RolesModule } from 'src/roles/roles.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantsEntity]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     RolesModule,
   ],
   controllers: [TenantsController],

@@ -3,6 +3,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersDBService } from './DB_Service/users_db.service';
@@ -13,12 +14,15 @@ import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { UserEntity } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { compare, hash } from 'bcrypt';
+import { TenantDBService } from 'src/tenants/DB_Services/tenant_db.service';
+import { Response } from 'express';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersDBService: UsersDBService,
     private readonly roleDBService: RolesDBService,
+    private readonly tenantDBService: TenantDBService,
   ) {}
 
   async createUser(
@@ -150,7 +154,20 @@ export class UsersService {
       total,
     };
   }
-  async profile(id: string, tenant_id: string) {
+  async profile(
+    id: string,
+    tenant_id: string,
+    tenant_domain: string,
+    response: Response,
+  ) {
+    const tenant = await this.tenantDBService.findOneTenant({
+      where: {
+        tenant_id,
+      },
+    });
+    if (!tenant) {
+      throw new NotFoundException();
+    }
     const user = await this.usersDBService.findOneUser({
       where: {
         id,
@@ -167,6 +184,31 @@ export class UsersService {
     });
     if (!user) {
       throw new NotFoundException();
+    }
+    if (tenant.domain !== tenant_domain) {
+      response.cookie(
+        'refresh_token',
+        {},
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          expires: new Date(),
+          priority: 'high',
+        },
+      );
+      response.cookie(
+        'access_token',
+        {},
+        {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          expires: new Date(),
+          priority: 'high',
+        },
+      );
+      throw new UnauthorizedException();
     }
     return user;
   }
