@@ -66,7 +66,9 @@ export class PotentialCustomersService {
         source: row['source'] ? row['source']?.trim() : undefined,
         note: row['Feedback'] ? row['Feedback']?.trim() : undefined,
         company: row['Company_Name'] ? row['Company_Name']?.trim() : undefined,
-        phone: row['Contact'] ? `+20` + row['Contact']?.trim() : undefined,
+        phone: row['Contact']
+          ? `+20` + row['Contact']?.toString()?.trim()
+          : undefined,
       });
       customers.push(user);
     }
