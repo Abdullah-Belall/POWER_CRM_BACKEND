@@ -43,7 +43,6 @@ export class PotentialCustomersService {
     return { done: true };
   }
   async importExcel({ tenant_id, id, lang }: UserTokenInterface, path: string) {
-    console.log('1');
     const workbook = XLSX.readFile(path);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data: any[] = XLSX.utils.sheet_to_json(sheet);
@@ -67,13 +66,11 @@ export class PotentialCustomersService {
         source: row['source'] ? row['source']?.trim() : undefined,
         note: row['Feedback'] ? row['Feedback']?.trim() : undefined,
         company: row['Company_Name'] ? row['Company_Name']?.trim() : undefined,
-        phone: row['phone'] ? `+20` + row['phone']?.trim() : undefined,
+        phone: row['Contact'] ? `+20` + row['Contact']?.trim() : undefined,
       });
       customers.push(user);
     }
-    console.log('4');
     await this.customersDBService.savePotentialCustomer(lang, customers as any);
-    console.log('done ');
     return { done: true };
   }
   async editCustomerData(
