@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ComplaintDBService } from 'src/complaints/DB_Service/complaints_db.service';
 import { DiscussionDBService } from 'src/discussions/DB_Service/discussions_db.service';
 import { PotentialCustomersDBService } from 'src/potential-customers/DB_Service/potential-customer-db.dervice';
@@ -8,6 +12,7 @@ import { SystemsDBService } from 'src/systems/DB_Service/systems_db.service';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { allowedSearchTables } from 'src/utils/base';
 import { DiscussionStatusEnum } from 'src/utils/types/enums/discussion-status.enum';
+import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 
 @Injectable()
 export class CommonService {

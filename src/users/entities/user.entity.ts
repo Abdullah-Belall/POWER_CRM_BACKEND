@@ -72,11 +72,11 @@ export class UserEntity {
     cascade: true,
   })
   discussions: DiscussionEntity[];
-  @Column({ unique: true })
+  @Column()
   user_name: string;
-  @Column({ nullable: true })
+  @Column()
   phone: string;
-  @Column({ nullable: true })
+  @Column()
   email: string;
   @OneToOne(() => TelegramEntity, (teleg) => teleg.user, { cascade: true })
   @JoinColumn()
