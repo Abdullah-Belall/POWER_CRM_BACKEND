@@ -1,6 +1,7 @@
 import { ComplaintsAssignerEntity } from 'src/complaints-assigner/entities/complaints-assigner.entity';
 import { ComplaintsSolvingEntity } from 'src/complaints-solving/entities/complaints-solving.entity';
 import { ComplaintEntity } from 'src/complaints/entities/complaint.entity';
+import { ContractEntity } from 'src/contracts/entities/contract.entity';
 import { DelayExcusesEntity } from 'src/delay-excuse/entities/delay-excuse.entity';
 import { DiscussionEntity } from 'src/discussions/entities/discussion.entity';
 import { PotentialCustomerEntity } from 'src/potential-customers/entities/potential-customer.entity';
@@ -42,6 +43,10 @@ export class UserEntity {
   @JoinTable()
   tasks: TaskEntity[];
   //* FOR CLIENTS ONLY
+  @OneToMany(() => ContractEntity, (contract) => contract.client, {
+    cascade: true,
+  })
+  contracts: ContractEntity[];
   @OneToMany(() => ComplaintEntity, (comp) => comp.presenter, { cascade: true })
   presenter_complaints: ComplaintEntity[];
   @OneToMany(() => ComplaintEntity, (comp) => comp.client, { cascade: true })
@@ -83,7 +88,6 @@ export class UserEntity {
   chat_id: TelegramEntity;
   @Column()
   password: string;
-
   @Column({ type: 'enum', enum: LangsEnum, default: LangsEnum.AR })
   lang: LangsEnum;
   @CreateDateColumn({ type: 'timestamptz' })

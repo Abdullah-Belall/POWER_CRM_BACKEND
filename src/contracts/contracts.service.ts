@@ -15,6 +15,10 @@ import { ContractStatusEnum } from 'src/utils/types/enums/contract-status.enum';
 import { ServiceEntity } from 'src/services/entities/service.entity';
 import { SystemEntity } from 'src/systems/entities/system.entity';
 import { PotentialCustomerStatus } from 'src/utils/types/enums/potential-customer.enum';
+import { SignedContractDto } from './dto/signed-contract.dto';
+import { UserEntity } from 'src/users/entities/user.entity';
+import { UsersDBService } from 'src/users/DB_Service/users_db.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class ContractsService {
@@ -25,6 +29,8 @@ export class ContractsService {
     private readonly servicesDBService: ServicesDBService,
     private readonly customersDBService: PotentialCustomersDBService,
     private readonly systemsContractsDBService: SystemsContractsDBService,
+    private readonly usersDBService: UsersDBService,
+    private readonly usersService: UsersService,
   ) {}
   async createContract(
     { tenant_id, lang }: UserTokenInterface,
@@ -205,5 +211,52 @@ export class ContractsService {
       .getOne();
     if (!contract) throw new NotFoundException();
     return contract;
+  }
+  async confirmSignedContract(
+    user: UserTokenInterface,
+    contract_id: string,
+    signedContractDto: SignedContractDto,
+  ) {
+    const { lang, tenant_id } = user;
+    if (!signedContractDto.client_id && !signedContractDto.client_user_name) {
+      throw new BadRequestException();
+    }
+    const contract = await this.contractDBService.findOneContract({
+      where: {
+        id: contract_id,
+        tenant_id,
+      },
+    });
+    if (!contract) {
+      throw new NotFoundException();
+    }
+    let client: UserEntity;
+    if (signedContractDto.client_id) {
+      const clientFetched = await this.usersDBService.findOneUser({
+        where: {
+          id: signedContractDto.client_id,
+        },
+      });
+      if (!clientFetched) throw new NotFoundException();
+      client = clientFetched;
+    } else {
+      const savedUser = await this.usersService.createUser(user, {
+        user_name: signedContractDto.client_user_name,
+        password: signedContractDto.client_password,
+        role_id: signedContractDto.client_role_id,
+        email: null as any,
+        phone: null as any,
+      });
+      client = (await this.usersDBService.findOneUser({
+        where: {
+          id: savedUser.id,
+        },
+      })) as UserEntity;
+    }
+    Object.assign(contract, { ...signedContractDto, client });
+    await this.contractDBService.saveContract(lang, contract);
+    return {
+      done: true,
+    };
   }
 }

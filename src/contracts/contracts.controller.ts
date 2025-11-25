@@ -14,6 +14,7 @@ import { User } from 'src/users/decorators/user.decorator';
 import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.interface';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { CreateContractStatusDto } from './dto/create-contract-status.dto';
+import { SignedContractDto } from './dto/signed-contract.dto';
 
 @Controller('contracts')
 export class ContractsController {
@@ -25,6 +26,19 @@ export class ContractsController {
     @Body() createContractDto: CreateContractDto,
   ) {
     return await this.contractsService.createContract(user, createContractDto);
+  }
+  @Post(':id/confirm-signed')
+  @UseGuards(AuthGuard)
+  async confirmSignedContract(
+    @User() user: UserTokenInterface,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() signedContractDto: SignedContractDto,
+  ) {
+    return await this.contractsService.confirmSignedContract(
+      user,
+      id,
+      signedContractDto,
+    );
   }
   @Patch(':id')
   @UseGuards(AuthGuard)

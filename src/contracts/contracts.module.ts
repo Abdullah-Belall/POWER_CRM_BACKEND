@@ -10,6 +10,7 @@ import { ServicesModule } from 'src/services/services.module';
 import { PotentialCustomersModule } from 'src/potential-customers/potential-customers.module';
 import { SystemsContractsModule } from 'src/systems-contracts/systems-contracts.module';
 import { ContractStatusDBService } from './DB_Service/contract-status_db.service';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ContractStatusDBService } from './DB_Service/contract-status_db.service
     ServicesModule,
     PotentialCustomersModule,
     SystemsContractsModule,
+    UsersModule,
   ],
   controllers: [ContractsController],
   providers: [ContractsService, ContractsDBService, ContractStatusDBService],
