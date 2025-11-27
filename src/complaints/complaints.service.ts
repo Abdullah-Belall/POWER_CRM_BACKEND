@@ -84,15 +84,7 @@ export class ComplaintsService {
   }
   async findComplaints(
     tenant_id: string,
-    {
-      client_id,
-      have_max_time_to_solve,
-      status,
-      accept_excuse,
-      created_from,
-      created_to,
-      ordered_by = 'DESC',
-    }: ComplaintsFilterInterface,
+    filter?: ComplaintsFilterInterface,
     managers: boolean = false,
   ) {
     const qb = this.complaintDBService
@@ -110,18 +102,18 @@ export class ComplaintsService {
         'supporter.index',
       ])
       .where('complaint.tenant_id = :tenant_id', { tenant_id });
-    if (client_id) {
-      qb.andWhere('client.id = :client_id', { client_id });
+    if (filter?.client_id) {
+      qb.andWhere('client.id = :client_id', { client_id: filter.client_id });
     }
     if (managers) {
       qb.addSelect(['client.id', 'client.user_name', 'client.index']);
     }
     const have_max_time_to_solve_fixed =
-      typeof have_max_time_to_solve === 'boolean'
-        ? have_max_time_to_solve
-        : have_max_time_to_solve === 'true'
+      typeof filter?.have_max_time_to_solve === 'boolean'
+        ? filter.have_max_time_to_solve
+        : filter?.have_max_time_to_solve === 'true'
           ? true
-          : have_max_time_to_solve === 'false'
+          : filter?.have_max_time_to_solve === 'false'
             ? false
             : undefined;
     if (have_max_time_to_solve_fixed !== undefined) {
@@ -129,17 +121,17 @@ export class ComplaintsService {
         value: have_max_time_to_solve_fixed,
       });
     }
-    if (status) {
+    if (filter?.status) {
       qb.where('complaint.status = :status', { status });
     }
     const accept_excuse_fixed =
-      typeof accept_excuse === 'boolean'
-        ? accept_excuse
-        : accept_excuse === 'true'
+      typeof filter?.accept_excuse === 'boolean'
+        ? filter.accept_excuse
+        : filter?.accept_excuse === 'true'
           ? true
-          : accept_excuse === 'false'
+          : filter?.accept_excuse === 'false'
             ? false
-            : accept_excuse === 'null'
+            : filter?.accept_excuse === 'null'
               ? null
               : undefined;
     if (accept_excuse_fixed === null) {
@@ -149,19 +141,19 @@ export class ComplaintsService {
         value: accept_excuse_fixed,
       });
     }
-    if (created_from) {
+    if (filter?.created_from) {
       qb.andWhere('complaint.created_at >= :created_from', {
-        created_from: new Date(created_from),
+        created_from: new Date(filter.created_from),
       });
     }
-    if (created_to) {
+    if (filter?.created_to) {
       qb.andWhere('complaint.created_at <= :created_to', {
-        created_to: new Date(created_to),
+        created_to: new Date(filter.created_to),
       });
     }
-    qb.orderBy('complaint.created_at', ordered_by).addOrderBy(
+    qb.orderBy('complaint.created_at', filter?.ordered_by || 'DESC').addOrderBy(
       'solving.created_at',
-      'DESC',
+      filter?.ordered_by || 'DESC',
     );
     const [complaints, total] = await qb.getManyAndCount();
     return {
@@ -561,5 +553,70 @@ export class ComplaintsService {
         id: '72c0967d-a1c1-4056-95a8-f928a5309a60',
       })
       .getMany();
+  }
+
+  async getMonthlyComplaints(tenant_id: string, id: string, month: number) {
+    const start_date = new Date(new Date().getFullYear(), month, 1);
+    const end_date = new Date(new Date().getFullYear(), month + 1, 0);
+    const complaints_count = await this.complaintDBService
+      .ComplaintQB('complaint')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
+      .leftJoin('complaint.client', 'client')
+      .andWhere('client.id = :id', { id })
+      .andWhere('complaint.created_at >= :start_date', { start_date })
+      .andWhere('complaint.created_at <= :end_date', { end_date })
+      .getExists();
+    return { complaints_count, month };
+  }
+
+  async clientOverviewPage(tenant_id: string, id: string) {
+    const total_complaints =
+      (await this.complaintDBService.getNextIndex(tenant_id)) - 1;
+    const total_completed_complaints = await this.complaintDBService
+      .ComplaintQB('complaint')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
+      .leftJoin('complaint.client', 'client')
+      .andWhere('client.id = :id', { id })
+      .andWhere('complaint.status IN (:...statuses)', {
+        statuses: [
+          ComplaintStatusEnum.COMPLETED,
+          ComplaintStatusEnum.CANCELLED,
+          ComplaintStatusEnum.CLIENT_CANCELLED,
+        ],
+      })
+      .getCount();
+    const monthly_complaints_graph = await Promise.all(
+      Array.from({ length: 12 }, (_, month) =>
+        this.getMonthlyComplaints(tenant_id, id, month),
+      ),
+    );
+    const complaints =
+      (await this.findComplaints(tenant_id))?.complaints?.slice(0, 6) || [];
+    const avg_resolution_seconds_result = await this.complaintDBService
+      .ComplaintQB('complaint')
+      .select(
+        'AVG(EXTRACT(EPOCH FROM (complaint.end_solve_at - complaint.created_at)))',
+        'avg_seconds',
+      )
+      .leftJoin('complaint.client', 'client')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
+      .andWhere('client.id = :id', { id })
+      .andWhere('complaint.end_solve_at IS NOT NULL')
+      .getRawOne<{ avg_seconds: string | null }>();
+    const avg_resolution_seconds = Number(
+      avg_resolution_seconds_result?.avg_seconds || 0,
+    );
+    const target_seconds = 24 * 60 * 60;
+    const avg_resolution_percentage = avg_resolution_seconds
+      ? Math.min((avg_resolution_seconds / target_seconds) * 100, 100)
+      : 0;
+    return {
+      done: true,
+      total_complaints,
+      total_completed_complaints,
+      monthly_complaints_graph,
+      complaints,
+      avg_resolution_percentage,
+    };
   }
 }

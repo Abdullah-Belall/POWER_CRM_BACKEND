@@ -19,6 +19,7 @@ import { SignedContractDto } from './dto/signed-contract.dto';
 import { UserEntity } from 'src/users/entities/user.entity';
 import { UsersDBService } from 'src/users/DB_Service/users_db.service';
 import { UsersService } from 'src/users/users.service';
+import { IsNull, Not } from 'typeorm';
 
 @Injectable()
 export class ContractsService {
@@ -165,15 +166,38 @@ export class ContractsService {
     );
     contract.curr_status = status;
     await this.contractDBService.saveContract(lang, contract);
-    if (contract.customer && status === ContractStatusEnum.SIGNED) {
-      contract.customer.status = PotentialCustomerStatus.CONTRACTED;
+    const savedContract = await this.contractDBService.findOneContract({
+      where: {
+        id: contract_id,
+        tenant_id,
+      },
+      relations: ['customer'],
+    });
+    let client_id: string | null = null;
+    if (
+      savedContract &&
+      savedContract.customer &&
+      status === ContractStatusEnum.SIGNED
+    ) {
+      savedContract.customer.status = PotentialCustomerStatus.CONTRACTED;
       await this.customersDBService.savePotentialCustomer(
         lang,
-        contract.customer,
+        savedContract.customer,
       );
+      const contract = await this.contractDBService.findOneContract({
+        where: {
+          customer: {
+            id: savedContract.customer.id,
+          },
+          client: Not(IsNull()),
+        },
+        relations: ['client'],
+      });
+      client_id = contract ? contract.client.id : null;
     }
     return {
       done: true,
+      client_id,
     };
   }
   async findOneContract(tenant_id: string, id: string) {

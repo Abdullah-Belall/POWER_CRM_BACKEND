@@ -47,6 +47,12 @@ export class ComplaintsController {
     });
   }
 
+  @Get('client-overview-page')
+  @UseGuards(AuthGuard)
+  async clientOverviewPage(@User() { tenant_id, id }: UserTokenInterface) {
+    return await this.complaintsService.clientOverviewPage(tenant_id, id);
+  }
+
   @Get('analytics')
   @UseGuards(AuthGuard)
   async getUserAnalytics(@User() { tenant_id, id, role }: UserTokenInterface) {

@@ -11,7 +11,6 @@ import { PotentialCustomerStatus } from 'src/utils/types/enums/potential-custome
 import { Brackets } from 'typeorm';
 import { UpdatePotentialCustomerDto } from './dto/update-potential-customer.dto';
 import * as XLSX from 'xlsx';
-import { LangsEnum } from 'src/utils/types/enums/langs.enum';
 import { PotentialCustomerEntity } from './entities/potential-customer.entity';
 
 @Injectable()

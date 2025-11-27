@@ -17,6 +17,10 @@ import type { UserTokenInterface } from 'src/users/types/interfaces/user-token.i
 @Controller('tenants')
 export class TenantsController {
   constructor(private readonly tenantsService: TenantsService) {}
+  @Get('allowed-origins')
+  async getAllowedOrigins() {
+    return await this.tenantsService.getAllowedOrigins();
+  }
   @Get()
   async getTenants() {
     return await this.tenantsService.getTenants();
