@@ -565,7 +565,7 @@ export class ComplaintsService {
       .andWhere('client.id = :id', { id })
       .andWhere('complaint.created_at >= :start_date', { start_date })
       .andWhere('complaint.created_at <= :end_date', { end_date })
-      .getExists();
+      .getCount();
     return { complaints_count, month };
   }
 
@@ -598,31 +598,12 @@ export class ComplaintsService {
       (
         await this.findComplaints(tenant_id, { client_id: id })
       )?.complaints?.slice(0, 6) || [];
-    const avg_resolution_seconds_result = await this.complaintDBService
-      .ComplaintQB('complaint')
-      .select(
-        'AVG(EXTRACT(EPOCH FROM (complaint.end_solve_at - complaint.created_at)))',
-        'avg_seconds',
-      )
-      .leftJoin('complaint.client', 'client')
-      .where('complaint.tenant_id = :tenant_id', { tenant_id })
-      .andWhere('client.id = :id', { id })
-      .andWhere('complaint.end_solve_at IS NOT NULL')
-      .getRawOne<{ avg_seconds: string | null }>();
-    const avg_resolution_seconds = Number(
-      avg_resolution_seconds_result?.avg_seconds || 0,
-    );
-    const target_seconds = 24 * 60 * 60;
-    const avg_resolution_percentage = avg_resolution_seconds
-      ? Math.min((avg_resolution_seconds / target_seconds) * 100, 100)
-      : 0;
     return {
       done: true,
       total_complaints,
       total_completed_complaints,
       monthly_complaints_graph,
       complaints,
-      avg_resolution_percentage,
     };
   }
 }
