@@ -570,8 +570,12 @@ export class ComplaintsService {
   }
 
   async clientOverviewPage(tenant_id: string, id: string) {
-    const total_complaints =
-      (await this.complaintDBService.getNextIndex(tenant_id)) - 1;
+    const total_complaints = await this.complaintDBService
+      .ComplaintQB('complaint')
+      .where('complaint.tenant_id = :tenant_id', { tenant_id })
+      .leftJoin('complaint.client', 'client')
+      .andWhere('client.id = :id', { id })
+      .getCount();
     const total_completed_complaints = await this.complaintDBService
       .ComplaintQB('complaint')
       .where('complaint.tenant_id = :tenant_id', { tenant_id })
@@ -591,7 +595,9 @@ export class ComplaintsService {
       ),
     );
     const complaints =
-      (await this.findComplaints(tenant_id))?.complaints?.slice(0, 6) || [];
+      (
+        await this.findComplaints(tenant_id, { client_id: id })
+      )?.complaints?.slice(0, 6) || [];
     const avg_resolution_seconds_result = await this.complaintDBService
       .ComplaintQB('complaint')
       .select(
