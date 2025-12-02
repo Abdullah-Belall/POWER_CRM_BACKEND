@@ -81,7 +81,16 @@ export class TenantDBService {
         ),
       );
     }
-    queryB.orderBy('tenant.created_at', created_sort ?? 'DESC');
+    queryB.leftJoin('tenant.branches', 'branches');
+    queryB
+      .addSelect([
+        'branches.id',
+        'branches.index',
+        'branches.ar_name',
+        'branches.en_name',
+      ])
+      .loadRelationCountAndMap('tenant.branches_count', 'tenant.branches')
+      .orderBy('tenant.created_at', created_sort ?? 'DESC');
     const [data, total] = await queryB.getManyAndCount();
     return {
       data,

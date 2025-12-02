@@ -72,8 +72,14 @@ export class ComplaintsService {
     //     },
     //   },
     // });
+    const complaintFetched = await this.complaintDBService.findOneComplaint({
+      where: {
+        id: complaint.id,
+      },
+      relations: ['client'],
+    });
     await this.telegramService.sendComplaint(
-      complaint,
+      complaintFetched,
       ['8260659694', '7186823447', '5726273594'],
       // (users as UserEntity[]).map((e) => e.chat_id?.chat_id),
     );

@@ -22,7 +22,10 @@ export class PdfGeneratorService {
 
     await page.setContent(html, { waitUntil: 'networkidle0' });
 
-    const filePath = path.join(__dirname, `${Date.now()}.pdf`);
+    const filePath = path.join(
+      __dirname,
+      `${data.client.user_name} - ${Date.now()}.pdf`,
+    );
     await page.pdf({ path: filePath, format: 'A4', printBackground: true });
 
     await browser.close();

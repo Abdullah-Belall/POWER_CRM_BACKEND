@@ -22,6 +22,7 @@ import { ServicesModule } from './services/services.module';
 import { SystemsContractsModule } from './systems-contracts/systems-contracts.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TenantBranchesModule } from './tenant-branches/tenant-branches.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ServicesModule,
     SystemsContractsModule,
     TasksModule,
+    TenantBranchesModule,
   ],
 })
 export class AppModule implements NestModule {
