@@ -59,9 +59,9 @@ export class DiscussionsService {
         ),
       }),
     );
-    const employees = JSON.parse(meeting_employees);
-    employees.push(id);
     if (meeting) {
+      const employees = JSON.parse(meeting_employees);
+      employees.push(id);
       await this.tasksService.createTask(user, {
         title: `${meeting} with ${customer.name}`,
         users: JSON.stringify(employees),
