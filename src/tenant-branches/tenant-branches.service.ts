@@ -117,6 +117,17 @@ export class TenantBranchesService {
     };
   }
 
+  async getOneTenantBranche(id: string, tenant_id: string) {
+    return await this.tenantBranchesDBService.findOneTenantBranch({
+      where: {
+        id,
+        tenant: {
+          tenant_id,
+        },
+      },
+    });
+  }
+
   async getTenantBranches(tenant_id: string) {
     return await this.tenantBranchesDBService.findTenantBranch({
       where: {

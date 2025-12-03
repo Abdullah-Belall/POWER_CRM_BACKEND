@@ -162,8 +162,23 @@ export class ComplaintsService {
       filter?.ordered_by || 'DESC',
     );
     const [complaints, total] = await qb.getManyAndCount();
+    const pendingComplaints = complaints.filter(
+      (e) => e.status === ComplaintStatusEnum.PENDING,
+    );
+    const inProgressComplaints = complaints.filter(
+      (e) => e.status === ComplaintStatusEnum.IN_PROGRESS,
+    );
+    const restComplaints = complaints.filter(
+      (e) =>
+        e.status !== ComplaintStatusEnum.PENDING &&
+        e.status !== ComplaintStatusEnum.IN_PROGRESS,
+    );
     return {
-      complaints,
+      complaints: [
+        ...pendingComplaints,
+        ...inProgressComplaints,
+        ...restComplaints,
+      ],
       total,
     };
   }

@@ -59,10 +59,12 @@ export class DiscussionsService {
         ),
       }),
     );
+    const employees = JSON.parse(meeting_employees);
+    employees.push(id);
     if (meeting) {
       await this.tasksService.createTask(user, {
         title: `${meeting} with ${customer.name}`,
-        users: meeting_employees,
+        users: JSON.stringify(employees),
         location: meeting_url,
         task_date: meeting_date,
         details: `This task was automatically created when a quote was created ${customer.name}.`,

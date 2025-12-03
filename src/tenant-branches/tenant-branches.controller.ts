@@ -46,6 +46,14 @@ export class TenantBranchesController {
     );
   }
 
+  @Get(':id/get-one/:tenant_id')
+  async getOneTenantBranche(
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Param('tenant_id', new ParseUUIDPipe()) tenant_id: string,
+  ) {
+    return await this.tenantBranchesService.getOneTenantBranche(id, tenant_id);
+  }
+
   @Get()
   @UseGuards(AuthGuard)
   async getClientBranches(@User() { tenant_id }: UserTokenInterface) {
